@@ -79,4 +79,3 @@ func (c *Capsule) Request(req *url.URL) int {
 
 	return Ok
 }
-

@@ -1,9 +1,9 @@
 package natto
 
 import (
+	"io/ioutil"
 	"net/url"
 	"testing"
-	"io/ioutil"
 )
 
 var c Capsule
@@ -35,4 +35,3 @@ func TestMissingFile(t *testing.T) {
 		t.Errorf("this file shouldn't even be here today")
 	}
 }
-

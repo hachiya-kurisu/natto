@@ -3,8 +3,8 @@ package main
 import (
 	"blekksprut.net/natto"
 	"bufio"
-	"fmt"
 	"flag"
+	"fmt"
 	"net/url"
 	"os"
 	"syscall"
