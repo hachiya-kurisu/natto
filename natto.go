@@ -140,6 +140,12 @@ func (c *Capsule) Request(host, path string) error {
 
 	switch {
 	case info.Mode() & 0111 != 0:
+		os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
+		if c.Protocol == Spartan {
+			os.Setenv("SERVER_PROTOCOL", "spartan")
+		} else {
+			os.Setenv("SERVER_PROTOCOL", "gemini")
+		}
 		base := filepath.Base(path)
 		err := unix.Exec(path, []string{base}, os.Environ())
 		if err != nil {
