@@ -2,6 +2,9 @@ package natto
 
 import (
 	"fmt"
+	"bufio"
+	"strings"
+	"strconv"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -37,6 +40,55 @@ type Capsule struct {
 	Path     string
 	Writer   io.Writer
 	Protocol Protocol
+}
+
+func (c *Capsule) SpartanRequest(r io.Reader) (string, string, error) {
+	reader := bufio.NewReader(r)
+	request, err := reader.ReadString('\n')
+	if err != nil {
+		return "", "", fmt.Errorf("something went wrong")
+	}
+	request = strings.TrimSpace(request)
+	components := strings.SplitN(request, " ", 3)
+	if len(components) != 3 {
+		return "", "", fmt.Errorf("invalid request: need host, path and length")
+	}
+	host, path, contentLength := components[0], components[1], components[2]
+
+	if path[0] != '/' {
+		return "", "", fmt.Errorf("invalid request: path has to begin with a /")
+	}
+
+	length, err := strconv.Atoi(contentLength)
+	if err != nil {
+		return "", "", fmt.Errorf("invalid content length")
+	}
+	if length > 0 {
+		return "", "", fmt.Errorf("no data block support (yet)")
+	}
+
+	return host, path, nil
+}
+
+func (c *Capsule) GeminiRequest(r io.Reader) (string, string, error) {
+	reader := bufio.NewReaderSize(r, 1024)
+  request, tooLong, err := reader.ReadLine()
+  if tooLong {
+		return "", "", fmt.Errorf("request is too long")
+  }
+  if err != nil {
+		return "", "", fmt.Errorf("something went wrong")
+  }
+  req, err := url.Parse(string(request))
+  if err != nil {
+		return "", "", fmt.Errorf("trouble parsing the url...")
+  }
+	err = c.Validate(req)
+	if err != nil {
+		return "", "", err
+	}
+
+	return req.Host, req.Path, nil
 }
 
 func (c *Capsule) Validate(req *url.URL) error {

@@ -2,22 +2,25 @@ package main
 
 import (
 	"blekksprut.net/natto"
-	"bufio"
 	"flag"
-	"net/url"
 	"os"
 	"syscall"
 )
 
 func main() {
-	root := flag.String("r", "/var/gemini", "root directory")
-	chroot := flag.Bool("c", true, "chroot to root directory")
+	r := flag.String("r", "/var/gemini", "root directory")
+	c := flag.Bool("c", true, "chroot to root directory")
+	s := flag.Bool("s", false, "spartan 💪")
 
 	flag.Parse()
 
-	capsule := natto.Capsule{Path: *root, Writer: os.Stdout}
+	capsule := natto.Capsule{Path: *r, Writer: os.Stdout}
 
-	if *chroot {
+	if *s {
+		capsule.Protocol = natto.Spartan
+	}
+
+	if *c {
 		err := syscall.Chroot(capsule.Path)
 		if err != nil {
 			panic("unable to chroot to root directory")
@@ -30,27 +33,24 @@ func main() {
 		}
 	}
 
-	r := bufio.NewReaderSize(os.Stdin, 1024)
-	request, tooLong, err := r.ReadLine()
-	if tooLong {
-		capsule.Panic(59, "request is too long")
-		os.Exit(1)
-	}
-	if err != nil {
-		capsule.Panic(40, "something went wrong...")
-		os.Exit(1)
+	var host, path string
+	var err error
+
+	switch capsule.Protocol {
+	case natto.Spartan:
+		host, path, err = capsule.SpartanRequest(os.Stdin)
+		if err != nil {
+			capsule.Panic(5, err.Error())
+			os.Exit(1)
+		}
+	case natto.Gemini:
+		host, path, err = capsule.GeminiRequest(os.Stdin)
+		if err != nil {
+			capsule.Panic(59, err.Error())
+			os.Exit(1)
+		}
 	}
 
-	u, err := url.Parse(string(request))
-	if err != nil {
-		capsule.Panic(40, "trouble parsing the url...")
-		os.Exit(1)
-	}
-
-	err = capsule.Validate(u)
-	if err != nil {
-		capsule.Panic(59, err.Error())
-	}
-
-	capsule.Request(u.Host, u.Path)
+	capsule.Request(host, path)
 }
+

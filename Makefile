@@ -1,22 +1,18 @@
-all: natto daizu
+all: natto
 
 again: clean all
-
-daizu: natto.go cmd/daizu/main.go
-	go build -o daizu cmd/daizu/main.go
 
 natto: natto.go cmd/natto/main.go
 	go build -o natto cmd/natto/main.go
 	
 clean:
-	rm -f natto daizu
+	rm -f natto
 
 test:
 	go test -cover
 
 install:
 	install natto /usr/local/bin
-	install daizu /usr/local/bin
 
 push:
 	got send
