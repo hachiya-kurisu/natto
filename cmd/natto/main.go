@@ -3,8 +3,8 @@ package main
 import (
 	"blekksprut.net/natto"
 	"flag"
-	"os"
 	"log"
+	"os"
 	"syscall"
 )
 
@@ -57,4 +57,3 @@ func main() {
 		log.Fatal(err.Error())
 	}
 }
-

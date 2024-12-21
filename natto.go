@@ -1,20 +1,21 @@
 package natto
 
 import (
-	"fmt"
 	"bufio"
-	"strings"
-	"strconv"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 )
 
 const Version = "0.0.4"
 
 type Protocol int
+
 const (
 	Gemini Protocol = iota
 	Spartan
@@ -64,17 +65,17 @@ func (c *Capsule) SpartanRequest(r io.Reader) (string, string, error) {
 
 func (c *Capsule) GeminiRequest(r io.Reader) (string, string, error) {
 	reader := bufio.NewReaderSize(r, 1024)
-  request, tooLong, err := reader.ReadLine()
-  if tooLong {
+	request, tooLong, err := reader.ReadLine()
+	if tooLong {
 		return "", "", fmt.Errorf("request is too long")
-  }
-  if err != nil {
+	}
+	if err != nil {
 		return "", "", fmt.Errorf("something went wrong")
-  }
-  req, err := url.Parse(string(request))
-  if err != nil {
+	}
+	req, err := url.Parse(string(request))
+	if err != nil {
 		return "", "", fmt.Errorf("trouble parsing the url...")
-  }
+	}
 	err = c.Validate(req)
 	if err != nil {
 		return "", "", err
