@@ -31,16 +31,18 @@ var Types = map[string]string{
 type CgiHandler func(string, []string, []string) error
 
 type Capsule struct {
-	Path     string
-	Writer   io.Writer
-	Protocol Protocol
+	Path       string
+	Writer     io.Writer
+	Protocol   Protocol
 	CgiHandler CgiHandler
 }
 
 func (c *Capsule) ProtocolName() string {
 	switch c.Protocol {
-	case Spartan: return "spartan"
-	default: return "gemini"
+	case Spartan:
+		return "spartan"
+	default:
+		return "gemini"
 	}
 }
 

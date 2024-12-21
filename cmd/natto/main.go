@@ -4,10 +4,10 @@ import (
 	"blekksprut.net/natto"
 	"bufio"
 	"flag"
+	"golang.org/x/sys/unix"
 	"log"
 	"os"
 	"syscall"
-	"golang.org/x/sys/unix"
 )
 
 func main() {

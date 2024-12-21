@@ -1,8 +1,8 @@
 package natto
 
 import (
-	"net/url"
 	"fmt"
+	"net/url"
 	"strings"
 	"testing"
 )
@@ -176,4 +176,3 @@ func TestSpartanRequestMalformedPath(t *testing.T) {
 		t.Errorf("requests without a leading / should fail")
 	}
 }
-
