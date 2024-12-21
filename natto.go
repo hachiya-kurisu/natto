@@ -36,6 +36,13 @@ type Capsule struct {
 	Protocol Protocol
 }
 
+func (c *Capsule) ProtocolName() string {
+	switch c.Protocol {
+	case Spartan: return "spartan"
+	default: return "gemini"
+	}
+}
+
 func (c *Capsule) SpartanRequest(r io.Reader) (string, string, error) {
 	reader := bufio.NewReader(r)
 	request, err := reader.ReadString('\n')
@@ -123,16 +130,26 @@ func (c *Capsule) Header(status int, info string) {
 
 func (c *Capsule) Cgi(path string) error {
 	os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
-	if c.Protocol == Spartan {
-		os.Setenv("SERVER_PROTOCOL", "spartan")
-	} else {
-		os.Setenv("SERVER_PROTOCOL", "gemini")
-	}
+	os.Setenv("SERVER_PROTOCOL", c.ProtocolName())
 	base := filepath.Base(path)
 	err := unix.Exec(path, []string{base}, os.Environ())
 	if err != nil {
 		return c.Panic(50, "something went wrong\n")
 	}
+	return nil
+}
+
+func (c *Capsule) Serve(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return c.Panic(40, "not found\n")
+	}
+	mime := Types[filepath.Ext(path)]
+	if mime == "" {
+		mime = "application/octet-stream"
+	}
+	c.Header(20, mime)
+	io.Copy(c.Writer, f) // ignore errors until we have proper logging
 	return nil
 }
 
@@ -157,19 +174,6 @@ func (c *Capsule) Request(host, path string) error {
 	case info.Mode()&0111 != 0:
 		return c.Cgi(path)
 	default:
-		f, err := os.Open(path)
-		if err != nil {
-			return c.Panic(40, "not found\n")
-		}
-
-		mime := Types[filepath.Ext(path)]
-		if mime == "" {
-			mime = "application/octet-stream"
-		}
-
-		c.Header(20, mime)
-		io.Copy(c.Writer, f) // ignore errors until we have proper logging
+		return c.Serve(path)
 	}
-
-	return nil
 }
