@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"golang.org/x/sys/unix"
 	"strings"
 )
 
@@ -100,7 +101,7 @@ func (c *Capsule) Validate(req *url.URL) error {
 	return nil
 }
 
-func (c *Capsule) Panic(status int, response string) {
+func (c *Capsule) Panic(status int, response string) error {
 	switch c.Protocol {
 	case Spartan:
 		fmt.Fprintf(c.Writer, "%d\r\n", status/10)
@@ -108,6 +109,7 @@ func (c *Capsule) Panic(status int, response string) {
 		fmt.Fprintf(c.Writer, "%d\r\n", status)
 	}
 	fmt.Fprintln(c.Writer, response)
+	return fmt.Errorf(response)
 }
 
 func (c *Capsule) Header(status int, info string) {
@@ -130,19 +132,33 @@ func (c *Capsule) Request(host, path string) error {
 		path = path + "index.gmi"
 	}
 
-	f, err := os.Open("." + path)
+	path = "." + path
+	info, err := os.Stat(path)
 	if err != nil {
-		c.Panic(40, "not found\n")
-		return fmt.Errorf("%s not found", path)
+		return c.Panic(40, "not found\n")
 	}
 
-	mime := Types[filepath.Ext(path)]
-	if mime == "" {
-		mime = "application/octet-stream"
-	}
+	switch {
+	case info.Mode() & 0111 != 0:
+		base := filepath.Base(path)
+		err := unix.Exec(path, []string{base}, os.Environ())
+		if err != nil {
+			return c.Panic(50, "something went wrong\n")
+		}
+	default:
+		f, err := os.Open(path)
+		if err != nil {
+			return c.Panic(40, "not found\n")
+		}
 
-	c.Header(20, mime)
-	io.Copy(c.Writer, f) // ignore errors until we have proper logging
+		mime := Types[filepath.Ext(path)]
+		if mime == "" {
+			mime = "application/octet-stream"
+		}
+
+		c.Header(20, mime)
+		io.Copy(c.Writer, f) // ignore errors until we have proper logging
+	}
 
 	return nil
 }

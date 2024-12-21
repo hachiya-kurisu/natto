@@ -41,14 +41,12 @@ func main() {
 	case natto.Spartan:
 		host, path, err = capsule.SpartanRequest(os.Stdin)
 		if err != nil {
-			capsule.Panic(5, err.Error())
-			log.Fatal(err.Error())
+			log.Fatal(capsule.Panic(5, err.Error()))
 		}
 	case natto.Gemini:
 		host, path, err = capsule.GeminiRequest(os.Stdin)
 		if err != nil {
-			capsule.Panic(59, err.Error())
-			log.Fatal(err.Error())
+			log.Fatal(capsule.Panic(59, err.Error()))
 		}
 	}
 
