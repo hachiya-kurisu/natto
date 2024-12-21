@@ -11,8 +11,10 @@ import (
 
 const Version = "0.0.4"
 
+type Result int
+
 const (
-	Ok int = iota + 1
+	Ok Result = iota + 1
 	Oops
 )
 
@@ -50,7 +52,7 @@ func (c *Capsule) Panic(status int, response string) {
 	fmt.Fprintln(c.Writer, response)
 }
 
-func (c *Capsule) Request(req *url.URL) int {
+func (c *Capsule) Request(req *url.URL) Result {
 	if c.Writer == nil {
 		c.Writer = ioutil.Discard
 	}
