@@ -12,5 +12,5 @@ austere gemini server for openbsd
 ## ideas
 
 * directory listings...?
-
+* error types to decide if something is temporary or permanent
 
