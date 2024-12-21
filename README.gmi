@@ -6,7 +6,7 @@ austere gemini server for openbsd
 * tls is handled through relayd
 * chroots
 * serves files and that's it
-* includes a separate spartan server (daizu)
+* spartan support 💪
 
 ## ideas
 
