@@ -2,6 +2,7 @@ package natto
 
 import (
 	"net/url"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -18,6 +19,13 @@ func TestGemtext(t *testing.T) {
 	c.Validate(url)
 	if c.Request(url.Host, url.Path) != nil {
 		t.Errorf("request to this file failed")
+	}
+}
+
+func TestProtocol(t *testing.T) {
+	var capsule Capsule
+	if capsule.ProtocolName() != "gemini" {
+		t.Errorf("the zero value should be the gemini protocol")
 	}
 }
 
@@ -99,6 +107,20 @@ func TestGeminiRequest(t *testing.T) {
 	}
 }
 
+func TestGeminiMalformedUrl(t *testing.T) {
+	_, _, err := c.GeminiRequest("\b")
+	if err == nil {
+		t.Errorf("shouldn't have accepted the malformed request")
+	}
+}
+
+func TestGeminiInvalidRequest(t *testing.T) {
+	_, _, err := c.GeminiRequest("gemini://me@lol/foo")
+	if err == nil {
+		t.Errorf("shouldn't have accepted the malformed request")
+	}
+}
+
 func TestGeminiLongRequest(t *testing.T) {
 	long := strings.Repeat("a", 1016) // 1024 - length of gemini://
 	_, _, err := c.GeminiRequest("gemini://" + long)
@@ -106,3 +128,52 @@ func TestGeminiLongRequest(t *testing.T) {
 		t.Errorf("shouldn't have accepted long request")
 	}
 }
+
+func TestGeminiCgi(t *testing.T) {
+	spartan.CgiHandler = func(argv0 string, argv []string, envv []string) error {
+		return nil
+	}
+	url, _ := url.Parse("spartan://test/test.sh")
+	if spartan.Request(url.Host, url.Path) != nil {
+		t.Errorf("cgi should succeed")
+	}
+}
+
+func TestGeminiCgiFailure(t *testing.T) {
+	spartan.CgiHandler = func(argv0 string, argv []string, envv []string) error {
+		return fmt.Errorf("oops")
+	}
+	url, _ := url.Parse("spartan://test/test.sh")
+	if spartan.Request(url.Host, url.Path) == nil {
+		t.Errorf("cgi should fail")
+	}
+}
+
+func TestSpartanRequest(t *testing.T) {
+	host, _, _ := spartan.SpartanRequest("test / 0")
+	if host != "test" {
+		t.Errorf("failed to parse spartan request")
+	}
+}
+
+func TestSpartanRequestMissingLength(t *testing.T) {
+	_, _, err := spartan.SpartanRequest("test /")
+	if err == nil {
+		t.Errorf("requests without a length should fail")
+	}
+}
+
+func TestSpartanRequestInvalidContentLength(t *testing.T) {
+	_, _, err := spartan.SpartanRequest("test / .")
+	if err == nil {
+		t.Errorf("requests with an invalid length should fail")
+	}
+}
+
+func TestSpartanRequestMalformedPath(t *testing.T) {
+	_, _, err := spartan.SpartanRequest("test : 0")
+	if err == nil {
+		t.Errorf("requests without a leading / should fail")
+	}
+}
+

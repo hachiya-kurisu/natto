@@ -7,12 +7,14 @@ import (
 	"log"
 	"os"
 	"syscall"
+	"golang.org/x/sys/unix"
 )
 
 func main() {
 	r := flag.String("r", "/var/gemini", "root directory")
 	c := flag.Bool("c", true, "chroot to root directory")
 	s := flag.Bool("s", false, "spartan 💪")
+	e := flag.Bool("e", false, "execute cgi scripts")
 
 	flag.Parse()
 
@@ -20,6 +22,10 @@ func main() {
 
 	if *s {
 		capsule.Protocol = natto.Spartan
+	}
+
+	if *e {
+		capsule.CgiHandler = unix.Exec
 	}
 
 	if *c {

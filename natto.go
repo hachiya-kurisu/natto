@@ -2,7 +2,6 @@ package natto
 
 import (
 	"fmt"
-	"golang.org/x/sys/unix"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -29,10 +28,13 @@ var Types = map[string]string{
 	".mp4": "video/mp4",
 }
 
+type CgiHandler func(string, []string, []string) error
+
 type Capsule struct {
 	Path     string
 	Writer   io.Writer
 	Protocol Protocol
+	CgiHandler CgiHandler
 }
 
 func (c *Capsule) ProtocolName() string {
@@ -116,11 +118,12 @@ func (c *Capsule) Header(status int, info string) {
 	}
 }
 
-func (c *Capsule) Cgi(path string) error {
+func (c *Capsule) Cgi(path string, handler CgiHandler) error {
 	os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
 	os.Setenv("SERVER_PROTOCOL", c.ProtocolName())
 	base := filepath.Base(path)
-	err := unix.Exec(path, []string{base}, os.Environ())
+	err := handler(path, []string{base}, os.Environ())
+	// unix.Exec(path, []string{base}, os.Environ())
 	if err != nil {
 		return c.Panic(50, "something went wrong\n")
 	}
@@ -159,8 +162,8 @@ func (c *Capsule) Request(host, path string) error {
 	}
 
 	switch {
-	case info.Mode()&0111 != 0:
-		return c.Cgi(path)
+	case info.Mode()&0111 != 0 && c.CgiHandler != nil:
+		return c.Cgi(path, c.CgiHandler)
 	default:
 		return c.Serve(path)
 	}
