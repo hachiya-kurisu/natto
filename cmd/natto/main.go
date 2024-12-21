@@ -4,7 +4,6 @@ import (
 	"blekksprut.net/natto"
 	"bufio"
 	"flag"
-	"fmt"
 	"net/url"
 	"os"
 	"syscall"
@@ -48,6 +47,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	capsule.Validate(u)
+	err = capsule.Validate(u)
+	if err != nil {
+		capsule.Panic(59, err.Error())
+	}
+
 	capsule.Request(u)
 }

@@ -28,23 +28,20 @@ type Capsule struct {
 	Writer io.Writer
 }
 
-func (c *Capsule) Validate(req *url.URL) {
+func (c *Capsule) Validate(req *url.URL) error {
 	if !req.IsAbs() {
-		c.Panic(59, "invalid request: not an absolute url")
-		os.Exit(1)
+		return fmt.Errorf("invalid request: not an absolute url")
 	}
 	if req.Fragment != "" {
-		c.Panic(59, "invalid request: fragments not allowed")
-		os.Exit(1)
+		return fmt.Errorf("invalid request: fragments not allowed")
 	}
 	if req.User != nil {
-		c.Panic(59, "invalid request: userinfo not allowed")
-		os.Exit(1)
+		return fmt.Errorf("invalid request: userinfo not allowed")
 	}
 	if req.Scheme != "gemini" {
-		c.Panic(59, "invalid request: this is a gemini server")
-		os.Exit(1)
+		return fmt.Errorf("invalid request: this is a gemini server")
 	}
+	return nil
 }
 
 func (c *Capsule) Panic(status int, response string) {
