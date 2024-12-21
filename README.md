@@ -11,7 +11,6 @@ austere gemini server for openbsd
 
 ## ideas
 
-* combine daizu & natto and use a flag to select the protocol
 * directory listings...?
 
 
