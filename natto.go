@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 )
 
+const Version = "0.0.1"
+
 const (
 	Ok int = iota + 1
 	Oops
