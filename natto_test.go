@@ -15,7 +15,7 @@ func init() {
 func TestGemtext(t *testing.T) {
 	url, _ := url.Parse("gemini://test/README.gmi")
 	c.Validate(url)
-	if c.Request(url.Host, url.Path) != Ok {
+	if c.Request(url.Host, url.Path) != nil {
 		t.Errorf("request to this file failed")
 	}
 }
@@ -23,7 +23,7 @@ func TestGemtext(t *testing.T) {
 func TestDefaultMime(t *testing.T) {
 	url, _ := url.Parse("gemini://test/natto_test.go")
 	c.Validate(url)
-	if c.Request(url.Host, url.Path) != Ok {
+	if c.Request(url.Host, url.Path) != nil {
 		t.Errorf("request to this file failed")
 	}
 }
@@ -31,7 +31,7 @@ func TestDefaultMime(t *testing.T) {
 func TestMissingFile(t *testing.T) {
 	url, _ := url.Parse("gemini://test/eyyyyy")
 	c.Validate(url)
-	if c.Request(url.Host, url.Path) != Oops {
+	if c.Request(url.Host, url.Path) == nil {
 		t.Errorf("this file shouldn't even be here today")
 	}
 }
@@ -72,21 +72,21 @@ func TestUserInfoInUrl(t *testing.T) {
 func TestNoLeadingSlash(t *testing.T) {
 	url, _ := url.Parse("gemini://test")
 	c.Validate(url)
-	if c.Request(url.Host, url.Path) != Oops {
+	if c.Request(url.Host, url.Path) == nil {
 		t.Errorf("shouldn't panic, at least")
 	}
 }
 
 func TestSpartan(t *testing.T) {
 	url, _ := url.Parse("spartan://test/README.gmi")
-	if spartan.Request(url.Host, url.Path) != Ok {
+	if spartan.Request(url.Host, url.Path) != nil {
 		t.Errorf("couldn't serve README.gmi")
 	}
 }
 
 func TestSpartanNotFound(t *testing.T) {
 	url, _ := url.Parse("spartan://test/notfound.gmi")
-	if spartan.Request(url.Host, url.Path) != Oops {
+	if spartan.Request(url.Host, url.Path) == nil {
 		t.Errorf("this file shouldn't even be here today")
 	}
 }

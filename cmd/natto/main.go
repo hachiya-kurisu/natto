@@ -4,6 +4,7 @@ import (
 	"blekksprut.net/natto"
 	"flag"
 	"os"
+	"log"
 	"syscall"
 )
 
@@ -23,13 +24,13 @@ func main() {
 	if *c {
 		err := syscall.Chroot(capsule.Path)
 		if err != nil {
-			panic("unable to chroot to root directory")
+			log.Fatal("unable to chroot to root directory")
 		}
 		os.Chdir("/")
 	} else {
 		err := os.Chdir(capsule.Path)
 		if err != nil {
-			panic("unable to chdir to root directory")
+			log.Fatal("unable to chdir to root directory")
 		}
 	}
 
@@ -41,16 +42,19 @@ func main() {
 		host, path, err = capsule.SpartanRequest(os.Stdin)
 		if err != nil {
 			capsule.Panic(5, err.Error())
-			os.Exit(1)
+			log.Fatal(err.Error())
 		}
 	case natto.Gemini:
 		host, path, err = capsule.GeminiRequest(os.Stdin)
 		if err != nil {
 			capsule.Panic(59, err.Error())
-			os.Exit(1)
+			log.Fatal(err.Error())
 		}
 	}
 
-	capsule.Request(host, path)
+	err = capsule.Request(host, path)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }
 

@@ -14,15 +14,7 @@ import (
 
 const Version = "0.0.4"
 
-type Result int
-
-const (
-	Ok Result = iota
-	Oops
-)
-
 type Protocol int
-
 const (
 	Gemini Protocol = iota
 	Spartan
@@ -126,7 +118,7 @@ func (c *Capsule) Header(status int, info string) {
 	}
 }
 
-func (c *Capsule) Request(host, path string) Result {
+func (c *Capsule) Request(host, path string) error {
 	if c.Writer == nil {
 		c.Writer = ioutil.Discard
 	}
@@ -140,7 +132,7 @@ func (c *Capsule) Request(host, path string) Result {
 	f, err := os.Open("." + path)
 	if err != nil {
 		c.Panic(40, "not found\n")
-		return Oops
+		return fmt.Errorf("%s not found", path)
 	}
 
 	mime := Types[filepath.Ext(path)]
@@ -151,5 +143,5 @@ func (c *Capsule) Request(host, path string) Result {
 	c.Header(20, mime)
 	io.Copy(c.Writer, f) // ignore errors until we have proper logging
 
-	return Ok
+	return nil
 }
