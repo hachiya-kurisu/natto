@@ -3,6 +3,7 @@ package natto
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -51,7 +52,7 @@ func (c *Capsule) Panic(status int, response string) {
 
 func (c *Capsule) Request(req *url.URL) int {
 	if c.Writer == nil {
-		c.Writer = os.Stdout
+		c.Writer = ioutil.Discard
 	}
 	if req.Path == "" {
 		req.Path = "/"
