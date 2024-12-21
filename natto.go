@@ -3,13 +3,13 @@ package natto
 import (
 	"bufio"
 	"fmt"
+	"golang.org/x/sys/unix"
 	"io"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
-	"golang.org/x/sys/unix"
 	"strings"
 )
 
@@ -121,6 +121,21 @@ func (c *Capsule) Header(status int, info string) {
 	}
 }
 
+func (c *Capsule) Cgi(path string) error {
+	os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
+	if c.Protocol == Spartan {
+		os.Setenv("SERVER_PROTOCOL", "spartan")
+	} else {
+		os.Setenv("SERVER_PROTOCOL", "gemini")
+	}
+	base := filepath.Base(path)
+	err := unix.Exec(path, []string{base}, os.Environ())
+	if err != nil {
+		return c.Panic(50, "something went wrong\n")
+	}
+	return nil
+}
+
 func (c *Capsule) Request(host, path string) error {
 	if c.Writer == nil {
 		c.Writer = ioutil.Discard
@@ -139,18 +154,8 @@ func (c *Capsule) Request(host, path string) error {
 	}
 
 	switch {
-	case info.Mode() & 0111 != 0:
-		os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
-		if c.Protocol == Spartan {
-			os.Setenv("SERVER_PROTOCOL", "spartan")
-		} else {
-			os.Setenv("SERVER_PROTOCOL", "gemini")
-		}
-		base := filepath.Base(path)
-		err := unix.Exec(path, []string{base}, os.Environ())
-		if err != nil {
-			return c.Panic(50, "something went wrong\n")
-		}
+	case info.Mode()&0111 != 0:
+		return c.Cgi(path)
 	default:
 		f, err := os.Open(path)
 		if err != nil {
