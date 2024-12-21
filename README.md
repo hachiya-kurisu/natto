@@ -13,4 +13,6 @@ austere gemini server for openbsd
 
 * directory listings...?
 * error types to decide if something is temporary or permanent
+* check the hostname 🤔
+* cgi support.. hmmm
 
