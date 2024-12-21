@@ -7,6 +7,4 @@ austere gemini server for openbsd
 * chroots
 * serves files and that's it
 
-```
 
-```
