@@ -2,6 +2,7 @@ package main
 
 import (
 	"blekksprut.net/natto"
+	"bufio"
 	"flag"
 	"log"
 	"os"
@@ -34,17 +35,21 @@ func main() {
 		}
 	}
 
-	var host, path string
-	var err error
+	reader := bufio.NewReader(os.Stdin)
+	request, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(capsule.Panic(5, err.Error()))
+	}
 
+	var host, path string
 	switch capsule.Protocol {
 	case natto.Spartan:
-		host, path, err = capsule.SpartanRequest(os.Stdin)
+		host, path, err = capsule.SpartanRequest(request)
 		if err != nil {
 			log.Fatal(capsule.Panic(5, err.Error()))
 		}
 	case natto.Gemini:
-		host, path, err = capsule.GeminiRequest(os.Stdin)
+		host, path, err = capsule.GeminiRequest(request)
 		if err != nil {
 			log.Fatal(capsule.Panic(59, err.Error()))
 		}

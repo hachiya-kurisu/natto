@@ -2,6 +2,7 @@ package natto
 
 import (
 	"net/url"
+	"strings"
 	"testing"
 )
 
@@ -88,5 +89,20 @@ func TestSpartanNotFound(t *testing.T) {
 	url, _ := url.Parse("spartan://test/notfound.gmi")
 	if spartan.Request(url.Host, url.Path) == nil {
 		t.Errorf("this file shouldn't even be here today")
+	}
+}
+
+func TestGeminiRequest(t *testing.T) {
+	host, _, _ := c.GeminiRequest("gemini://test")
+	if host != "test" {
+		t.Errorf("failed to parse gemini request")
+	}
+}
+
+func TestGeminiLongRequest(t *testing.T) {
+	long := strings.Repeat("a", 1016) // 1024 - length of gemini://
+	_, _, err := c.GeminiRequest("gemini://" + long)
+	if err == nil {
+		t.Errorf("shouldn't have accepted long request")
 	}
 }

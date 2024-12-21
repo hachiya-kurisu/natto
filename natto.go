@@ -1,7 +1,6 @@
 package natto
 
 import (
-	"bufio"
 	"fmt"
 	"golang.org/x/sys/unix"
 	"io"
@@ -43,12 +42,7 @@ func (c *Capsule) ProtocolName() string {
 	}
 }
 
-func (c *Capsule) SpartanRequest(r io.Reader) (string, string, error) {
-	reader := bufio.NewReader(r)
-	request, err := reader.ReadString('\n')
-	if err != nil {
-		return "", "", fmt.Errorf("something went wrong")
-	}
+func (c *Capsule) SpartanRequest(request string) (string, string, error) {
 	request = strings.TrimSpace(request)
 	components := strings.SplitN(request, " ", 3)
 	if len(components) != 3 {
@@ -71,24 +65,18 @@ func (c *Capsule) SpartanRequest(r io.Reader) (string, string, error) {
 	return host, path, nil
 }
 
-func (c *Capsule) GeminiRequest(r io.Reader) (string, string, error) {
-	reader := bufio.NewReaderSize(r, 1024)
-	request, tooLong, err := reader.ReadLine()
-	if tooLong {
+func (c *Capsule) GeminiRequest(request string) (string, string, error) {
+	if len(request) > 1024 {
 		return "", "", fmt.Errorf("request is too long")
 	}
+	req, err := url.Parse(strings.TrimSpace(request))
 	if err != nil {
-		return "", "", fmt.Errorf("something went wrong")
-	}
-	req, err := url.Parse(string(request))
-	if err != nil {
-		return "", "", fmt.Errorf("trouble parsing the url...")
+		return "", "", fmt.Errorf("trouble parsing the url")
 	}
 	err = c.Validate(req)
 	if err != nil {
 		return "", "", err
 	}
-
 	return req.Host, req.Path, nil
 }
 
