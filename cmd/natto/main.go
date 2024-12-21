@@ -52,5 +52,5 @@ func main() {
 		capsule.Panic(59, err.Error())
 	}
 
-	capsule.Request(u)
+	capsule.Request(u.Host, u.Path)
 }

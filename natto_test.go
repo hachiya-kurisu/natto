@@ -6,11 +6,16 @@ import (
 )
 
 var c Capsule
+var spartan Capsule
+
+func init() {
+	spartan.Protocol = Spartan
+}
 
 func TestGemtext(t *testing.T) {
 	url, _ := url.Parse("gemini://test/README.gmi")
 	c.Validate(url)
-	if c.Request(url) != Ok {
+	if c.Request(url.Host, url.Path) != Ok {
 		t.Errorf("request to this file failed")
 	}
 }
@@ -18,7 +23,7 @@ func TestGemtext(t *testing.T) {
 func TestDefaultMime(t *testing.T) {
 	url, _ := url.Parse("gemini://test/natto_test.go")
 	c.Validate(url)
-	if c.Request(url) != Ok {
+	if c.Request(url.Host, url.Path) != Ok {
 		t.Errorf("request to this file failed")
 	}
 }
@@ -26,7 +31,7 @@ func TestDefaultMime(t *testing.T) {
 func TestMissingFile(t *testing.T) {
 	url, _ := url.Parse("gemini://test/eyyyyy")
 	c.Validate(url)
-	if c.Request(url) != Oops {
+	if c.Request(url.Host, url.Path) != Oops {
 		t.Errorf("this file shouldn't even be here today")
 	}
 }
@@ -47,7 +52,6 @@ func TestFragmentInUrl(t *testing.T) {
 	}
 }
 
-
 func TestScheme(t *testing.T) {
 	url, _ := url.Parse("spartan://test/eyyyyy")
 	err := c.Validate(url)
@@ -64,12 +68,25 @@ func TestUserInfoInUrl(t *testing.T) {
 	}
 }
 
-
 // todo: actually test stuff here
 func TestNoLeadingSlash(t *testing.T) {
 	url, _ := url.Parse("gemini://test")
 	c.Validate(url)
-	if c.Request(url) != Oops {
+	if c.Request(url.Host, url.Path) != Oops {
 		t.Errorf("shouldn't panic, at least")
+	}
+}
+
+func TestSpartan(t *testing.T) {
+	url, _ := url.Parse("spartan://test/README.gmi")
+	if spartan.Request(url.Host, url.Path) != Ok {
+		t.Errorf("couldn't serve README.gmi")
+	}
+}
+
+func TestSpartanNotFound(t *testing.T) {
+	url, _ := url.Parse("spartan://test/notfound.gmi")
+	if spartan.Request(url.Host, url.Path) != Oops {
+		t.Errorf("this file shouldn't even be here today")
 	}
 }
