@@ -15,15 +15,11 @@ func main() {
 	c := flag.Bool("c", true, "chroot to root directory")
 	s := flag.Bool("s", false, "spartan 💪")
 	e := flag.Bool("e", false, "execute cgi scripts")
-
 	flag.Parse()
-
 	capsule := natto.Capsule{Path: *r, Writer: os.Stdout}
-
 	if *s {
 		capsule.Protocol = natto.Spartan
 	}
-
 	if *e {
 		capsule.CgiHandler = unix.Exec
 	}
