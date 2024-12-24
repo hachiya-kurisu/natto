@@ -37,6 +37,8 @@ func main() {
 		}
 	}
 
+	Pledge()
+
 	reader := bufio.NewReader(os.Stdin)
 	request, err := reader.ReadString('\n')
 	if err != nil {
