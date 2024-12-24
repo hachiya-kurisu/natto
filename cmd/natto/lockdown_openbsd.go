@@ -5,8 +5,8 @@ import (
 )
 
 func Lockdown(path string) {
-	unix.Pledge("stdio exec rpath wpath", "")
 	unix.Unveil(path, "r")
 	unix.UnveilBlock()
+	unix.Pledge("stdio exec rpath wpath", "")
 }
 
