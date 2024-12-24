@@ -3,7 +3,7 @@ all: natto
 again: clean all
 
 natto: natto.go cmd/natto/main.go
-	go build -o natto cmd/natto/main.go
+	go build -C cmd/natto -o ../../natto
 	
 clean:
 	rm -f natto
