@@ -1,17 +1,18 @@
-package natto
+package natto_test
 
 import (
+	"blekksprut.net/natto"
 	"fmt"
 	"net/url"
 	"strings"
 	"testing"
 )
 
-var c Capsule
-var spartan Capsule
+var c natto.Capsule
+var spartan natto.Capsule
 
 func init() {
-	spartan.Protocol = Spartan
+	spartan.Protocol = natto.Spartan
 }
 
 func TestGemtext(t *testing.T) {
@@ -23,7 +24,7 @@ func TestGemtext(t *testing.T) {
 }
 
 func TestProtocol(t *testing.T) {
-	var capsule Capsule
+	var capsule natto.Capsule
 	if capsule.ProtocolName() != "gemini" {
 		t.Errorf("the zero value should be the gemini protocol")
 	}
