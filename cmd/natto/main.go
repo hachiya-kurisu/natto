@@ -7,15 +7,14 @@ import (
 	"golang.org/x/sys/unix"
 	"log"
 	"os"
-	"syscall"
 )
 
 func main() {
 	r := flag.String("r", "/var/gemini", "root directory")
-	c := flag.Bool("c", true, "chroot to root directory")
 	s := flag.Bool("s", false, "spartan 💪")
 	e := flag.Bool("e", false, "execute cgi scripts")
 	flag.Parse()
+
 	capsule := natto.Capsule{Path: *r, Writer: os.Stdout}
 	if *s {
 		capsule.Protocol = natto.Spartan
@@ -24,20 +23,12 @@ func main() {
 		capsule.CgiHandler = unix.Exec
 	}
 
-	if *c {
-		err := syscall.Chroot(capsule.Path)
-		if err != nil {
-			log.Fatal("unable to chroot to root directory")
-		}
-		os.Chdir("/")
-	} else {
-		err := os.Chdir(capsule.Path)
-		if err != nil {
-			log.Fatal("unable to chdir to root directory")
-		}
+	err := os.Chdir(capsule.Path)
+	if err != nil {
+		log.Fatal("unable to chdir to root directory")
 	}
 
-	Pledge()
+	Lockdown(*r)
 
 	reader := bufio.NewReader(os.Stdin)
 	request, err := reader.ReadString('\n')

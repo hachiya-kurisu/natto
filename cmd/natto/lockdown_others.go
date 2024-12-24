@@ -2,6 +2,6 @@
 
 package main
 
-func Pledge() {
+func Lockdown(path string) {
 	return
 }
