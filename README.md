@@ -25,7 +25,7 @@ relay "gemini" {
 
 and inetd.conf:
 ```
-[::1]:gemini stream tcp6 nowait root /usr/local/bin/natto natto
+[::1]:gemini stream tcp6 nowait gemini /usr/local/bin/natto natto
 ```
 
 you might have to define the gemini service in /etc/services:
