@@ -176,7 +176,7 @@ func (c *Capsule) Serve(path string) error {
 		mime = "application/octet-stream"
 	}
 	c.Header(Success, mime)
-	io.Copy(c.Writer, f) // ignore errors until we have proper logging
+	io.Copy(c.Writer, f)
 	return nil
 }
 
