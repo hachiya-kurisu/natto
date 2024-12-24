@@ -1,9 +1,9 @@
 # natto
 
-austere gemini/spartan server for openbsd
+austere gemini/spartan server for openbsd (might work on other platforms)
 
 * inetd-based
-* tls handled through relayd
+* tls handled by relayd
 * chroots
 * spartan support 💪
 
