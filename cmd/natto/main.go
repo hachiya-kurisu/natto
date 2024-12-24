@@ -42,7 +42,7 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	request, err := reader.ReadString('\n')
 	if err != nil {
-		log.Fatal(capsule.Panic(err))
+		log.Fatal(capsule.Fail(natto.PermanentFailure, err.Error()))
 	}
 
 	var host, path string
@@ -50,12 +50,12 @@ func main() {
 	case natto.Spartan:
 		host, path, err = capsule.SpartanRequest(request)
 		if err != nil {
-			log.Fatal(capsule.Panic(err))
+			log.Fatal(capsule.Fail(natto.PermanentFailure, err.Error()))
 		}
 	case natto.Gemini:
 		host, path, err = capsule.GeminiRequest(request)
 		if err != nil {
-			log.Fatal(capsule.Panic(err))
+			log.Fatal(capsule.Fail(natto.PermanentFailure, err.Error()))
 		}
 	}
 
