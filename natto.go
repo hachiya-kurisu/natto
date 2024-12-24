@@ -137,19 +137,13 @@ func (c *Capsule) Validate(req *url.URL) error {
 	return nil
 }
 
-func (c *Capsule) Panic(err error) error {
-	failure, ok := err.(*Failure)
-	var status int
-	if ok {
-		status = failure.status
-	} else {
-		status = PermanentFailure // is this a good default?
-	}
+func (c *Capsule) Panic(failure *Failure) error {
+	status := failure.status
 	if c.Protocol == Spartan && status > 10 {
 		status /= 10
 	}
-	fmt.Fprintf(c.Writer, "%d %s\r\n", status, err.Error())
-	return err
+	fmt.Fprintf(c.Writer, "%d %s\r\n", status, failure.Error())
+	return failure
 }
 
 func (c *Capsule) Header(status int, info string) {
@@ -166,9 +160,8 @@ func (c *Capsule) Cgi(path string, handler CgiHandler) error {
 	os.Setenv("SERVER_PROTOCOL", c.ProtocolName())
 	base := filepath.Base(path)
 	err := handler(path, []string{base}, os.Environ())
-	// unix.Exec(path, []string{base}, os.Environ())
 	if err != nil {
-		return c.Panic(fmt.Errorf("something went wrong"))
+		return c.Panic(&Failure{CGIError, "something went wrong"})
 	}
 	return nil
 }
