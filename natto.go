@@ -13,6 +13,30 @@ import (
 
 const Version = "0.0.6"
 
+const (
+	Input               = 10
+	SensitiveInput      = 11
+	Success             = 20
+	TemporaryRedirect   = 30
+	PermanentRedirect   = 31
+	TemporaryFailure    = 40
+	ServerUnavailable   = 41
+	CGIError            = 42
+	ProxyError          = 43
+	SlowDown            = 44
+	PermanentFailure    = 50
+	NotFound            = 51
+	Gone                = 52
+	ProxyRequestRefused = 53
+	BadRequest          = 59
+)
+
+const (
+	Redirect    = 3
+	ClientError = 4
+	ServerError = 5
+)
+
 type Protocol int
 
 const (
@@ -20,8 +44,8 @@ const (
 	Spartan
 )
 
-type Failure struct{
-	status int
+type Failure struct {
+	status  int
 	message string
 }
 
@@ -59,20 +83,20 @@ func (c *Capsule) SpartanRequest(request string) (string, string, error) {
 	request = strings.TrimSpace(request)
 	components := strings.SplitN(request, " ", 3)
 	if len(components) != 3 {
-		return c.Fail(40, "bad request")
+		return c.Fail(ClientError, "bad request")
 	}
 	host, path, contentLength := components[0], components[1], components[2]
 
 	if path[0] != '/' {
-		return c.Fail(40, "bad request - missing /")
+		return c.Fail(ClientError, "bad request - missing /")
 	}
 
 	length, err := strconv.Atoi(contentLength)
 	if err != nil {
-		return c.Fail(40, "bad invalid content length")
+		return c.Fail(ClientError, "bad request - invalid content length")
 	}
 	if length > 0 {
-		return c.Fail(40, "no data block support yet")
+		return c.Fail(ServerError, "no data block support yet")
 	}
 
 	return host, path, nil
@@ -84,15 +108,15 @@ func (c *Capsule) Fail(status int, message string) (string, string, error) {
 
 func (c *Capsule) GeminiRequest(request string) (string, string, error) {
 	if len(request) > 1024 {
-		return c.Fail(59, "bad request: too long")
+		return c.Fail(BadRequest, "bad request: too long")
 	}
 	req, err := url.Parse(strings.TrimSpace(request))
 	if err != nil {
-		return c.Fail(59, "invalid url")
+		return c.Fail(BadRequest, "invalid url")
 	}
 	err = c.Validate(req)
 	if err != nil {
-		return c.Fail(59, err.Error())
+		return c.Fail(BadRequest, err.Error())
 	}
 	return req.Host, req.Path, nil
 }
@@ -119,14 +143,12 @@ func (c *Capsule) Panic(err error) error {
 	if ok {
 		status = failure.status
 	} else {
-		status = 50
+		status = PermanentFailure // is this a good default?
 	}
-	switch c.Protocol {
-	case Spartan:
-		fmt.Fprintf(c.Writer, "%d %s\r\n", status/10, err.Error())
-	case Gemini:
-		fmt.Fprintf(c.Writer, "%d %s\r\n", status, err.Error())
+	if c.Protocol == Spartan && status > 10 {
+		status /= 10
 	}
+	fmt.Fprintf(c.Writer, "%d %s\r\n", status, err.Error())
 	return err
 }
 
@@ -160,7 +182,7 @@ func (c *Capsule) Serve(path string) error {
 	if mime == "" {
 		mime = "application/octet-stream"
 	}
-	c.Header(20, mime)
+	c.Header(Success, mime)
 	io.Copy(c.Writer, f) // ignore errors until we have proper logging
 	return nil
 }
