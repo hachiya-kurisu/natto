@@ -54,11 +54,15 @@ func (f *Failure) Error() string {
 }
 
 var Types = map[string]string{
-	".gmi": "text/gemini",
-	".txt": "text/plain",
-	".jpg": "image/jpeg",
-	".m4a": "audio/mp4",
-	".mp4": "video/mp4",
+	".gmi":  "text/gemini",
+	".txt":  "text/plain",
+	".jpg":  "image/jpeg",
+	".png":  "image/png",
+	".jxl":  "image/jxl",
+	".webp": "image/webp",
+	".mp3":  "audio/mpeg",
+	".m4a":  "audio/mp4",
+	".mp4":  "video/mp4",
 }
 
 type CgiHandler func(string, []string, []string) error
