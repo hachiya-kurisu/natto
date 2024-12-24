@@ -15,6 +15,14 @@ cover:
 	go test -coverprofile=cover.out
 	go tool cover -html cover.out
 
+cert:
+	openssl genrsa -out /etc/ssl/private/gemini.key 2048
+	openssl req -new -key /etc/ssl/private/gemini.key \
+		-out /etc/ssl/gemini.csr
+	openssl x509 -req -days 2500000 \
+		-in /etc/ssl/gemini.csr -signkey /etc/ssl/private/gemini.key \
+		-out /etc/ssl/gemini.crt
+
 install:
 	install natto /usr/local/bin
 
