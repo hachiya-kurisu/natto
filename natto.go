@@ -169,7 +169,7 @@ func (c *Capsule) Cgi(path string, handler CgiHandler) error {
 func (c *Capsule) Serve(path string) error {
 	f, err := os.Open(path)
 	if err != nil {
-		return c.Panic(&Failure{40, "not found"})
+		return c.Panic(&Failure{NotFound, "not found"})
 	}
 	mime := Types[filepath.Ext(path)]
 	if mime == "" {
@@ -194,7 +194,7 @@ func (c *Capsule) Request(host, path string) error {
 	path = "." + path
 	info, err := os.Stat(path)
 	if err != nil {
-		return c.Panic(&Failure{40, "not found"})
+		return c.Panic(&Failure{NotFound, "not found"})
 	}
 
 	switch {
