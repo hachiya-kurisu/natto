@@ -20,6 +20,15 @@ const (
 	Spartan
 )
 
+type Failure struct{
+	status int
+	message string
+}
+
+func (f *Failure) Error() string {
+	return f.message
+}
+
 var Types = map[string]string{
 	".gmi": "text/gemini",
 	".txt": "text/plain",
@@ -50,65 +59,75 @@ func (c *Capsule) SpartanRequest(request string) (string, string, error) {
 	request = strings.TrimSpace(request)
 	components := strings.SplitN(request, " ", 3)
 	if len(components) != 3 {
-		return "", "", fmt.Errorf("invalid request: need host, path and length")
+		return c.Fail(40, "bad request")
 	}
 	host, path, contentLength := components[0], components[1], components[2]
 
 	if path[0] != '/' {
-		return "", "", fmt.Errorf("invalid request: path has to begin with a /")
+		return c.Fail(40, "bad request - missing /")
 	}
 
 	length, err := strconv.Atoi(contentLength)
 	if err != nil {
-		return "", "", fmt.Errorf("invalid content length")
+		return c.Fail(40, "bad invalid content length")
 	}
 	if length > 0 {
-		return "", "", fmt.Errorf("no data block support (yet)")
+		return c.Fail(40, "no data block support yet")
 	}
 
 	return host, path, nil
 }
 
+func (c *Capsule) Fail(status int, message string) (string, string, error) {
+	return "", "", &Failure{status, message}
+}
+
 func (c *Capsule) GeminiRequest(request string) (string, string, error) {
 	if len(request) > 1024 {
-		return "", "", fmt.Errorf("request is too long")
+		return c.Fail(59, "bad request: too long")
 	}
 	req, err := url.Parse(strings.TrimSpace(request))
 	if err != nil {
-		return "", "", fmt.Errorf("trouble parsing the url")
+		return c.Fail(59, "invalid url")
 	}
 	err = c.Validate(req)
 	if err != nil {
-		return "", "", err
+		return c.Fail(59, err.Error())
 	}
 	return req.Host, req.Path, nil
 }
 
 func (c *Capsule) Validate(req *url.URL) error {
 	if !req.IsAbs() {
-		return fmt.Errorf("invalid request: not an absolute url")
+		return fmt.Errorf("not an absolute url")
 	}
 	if req.Fragment != "" {
-		return fmt.Errorf("invalid request: fragments not allowed")
+		return fmt.Errorf("fragments not allowed")
 	}
 	if req.User != nil {
-		return fmt.Errorf("invalid request: userinfo not allowed")
+		return fmt.Errorf("userinfo not allowed")
 	}
 	if req.Scheme != "gemini" {
-		return fmt.Errorf("invalid request: this is a gemini server")
+		return fmt.Errorf("this is a gemini server")
 	}
 	return nil
 }
 
-func (c *Capsule) Panic(status int, response string) error {
+func (c *Capsule) Panic(err error) error {
+	failure, ok := err.(*Failure)
+	var status int
+	if ok {
+		status = failure.status
+	} else {
+		status = 50
+	}
 	switch c.Protocol {
 	case Spartan:
-		fmt.Fprintf(c.Writer, "%d\r\n", status/10)
+		fmt.Fprintf(c.Writer, "%d %s\r\n", status/10, err.Error())
 	case Gemini:
-		fmt.Fprintf(c.Writer, "%d\r\n", status)
+		fmt.Fprintf(c.Writer, "%d %s\r\n", status, err.Error())
 	}
-	fmt.Fprintln(c.Writer, response)
-	return fmt.Errorf(response)
+	return err
 }
 
 func (c *Capsule) Header(status int, info string) {
@@ -127,7 +146,7 @@ func (c *Capsule) Cgi(path string, handler CgiHandler) error {
 	err := handler(path, []string{base}, os.Environ())
 	// unix.Exec(path, []string{base}, os.Environ())
 	if err != nil {
-		return c.Panic(50, "something went wrong\n")
+		return c.Panic(fmt.Errorf("something went wrong"))
 	}
 	return nil
 }
@@ -135,7 +154,7 @@ func (c *Capsule) Cgi(path string, handler CgiHandler) error {
 func (c *Capsule) Serve(path string) error {
 	f, err := os.Open(path)
 	if err != nil {
-		return c.Panic(40, "not found\n")
+		return c.Panic(&Failure{40, "not found"})
 	}
 	mime := Types[filepath.Ext(path)]
 	if mime == "" {
@@ -160,7 +179,7 @@ func (c *Capsule) Request(host, path string) error {
 	path = "." + path
 	info, err := os.Stat(path)
 	if err != nil {
-		return c.Panic(40, "not found\n")
+		return c.Panic(&Failure{40, "not found"})
 	}
 
 	switch {
