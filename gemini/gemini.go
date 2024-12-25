@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"path/filepath"
+	"os/exec"
 	"strings"
 )
 
@@ -79,18 +79,25 @@ func (c *Capsule) request(path string, w io.Writer) error {
 	}
 	path = "." + path
 
-	f, err := os.Open(path)
-	if err != nil {
-		return fmt.Errorf("file not found")
+	mime := natto.Mime(path)
+	switch mime {
+	case "application/cgi":
+		os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
+		os.Setenv("SERVER_PROTOCOL", "gemini")
+		cmd := exec.Command(path)
+		cmd.Env = os.Environ()
+		cmd.Stdout = w
+		err := cmd.Run()
+		if err != nil {
+			return fmt.Errorf("cgi trouble")
+		}
+	default:
+		f, err := os.Open(path)
+		if err != nil {
+			return fmt.Errorf("file not found")
+		}
+		fmt.Fprintf(w, "%d %s\r\n", Success, mime)
+		io.Copy(w, f)
 	}
-
-	mime := natto.Types[filepath.Ext(path)]
-	if mime == "" {
-		mime = "application/octet-stream"
-	}
-
-	fmt.Fprintf(w, "%d %s\r\n", Success, mime)
-	io.Copy(w, f)
-
 	return nil
 }

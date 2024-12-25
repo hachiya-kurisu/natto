@@ -25,6 +25,20 @@ func TestMissingSlash(t *testing.T) {
 	}
 }
 
+func TestCgi(t *testing.T) {
+	err := g.Handle("gemini://localhost/hello.cgi", io.Discard)
+	if err != nil {
+		t.Errorf("request shouldn't have failed")
+	}
+}
+
+func TestBrokenCgi(t *testing.T) {
+	err := g.Handle("gemini://localhost/failure.cgi", io.Discard)
+	if err == nil {
+		t.Errorf("request should have failed")
+	}
+}
+
 func TestDefaultMime(t *testing.T) {
 	err := g.Handle("gemini://localhost/natto.go", io.Discard)
 	if err != nil {

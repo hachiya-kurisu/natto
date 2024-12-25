@@ -2,11 +2,13 @@ package natto
 
 import (
 	"io"
+	"path/filepath"
 )
 
 const Version = "0.1.1"
 
 var Types = map[string]string{
+	".cgi":  "application/cgi",
 	".gmi":  "text/gemini",
 	".txt":  "text/plain",
 	".jpg":  "image/jpeg",
@@ -20,4 +22,12 @@ var Types = map[string]string{
 
 type Capsule interface {
 	Handle(string, io.Writer) error
+}
+
+func Mime(path string) string {
+	mime := Types[filepath.Ext(path)]
+	if mime == "" {
+		mime = "application/octet-stream"
+	}
+	return mime
 }
