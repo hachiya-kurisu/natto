@@ -150,3 +150,10 @@ func TestSpartanIndex(t *testing.T) {
 		t.Errorf("request should have failed: %s", err.Error())
 	}
 }
+
+func TestSpartanCgi(t *testing.T) {
+	err := s.Handle("localhost /hello.cgi 0", io.Discard)
+	if err != nil {
+		t.Errorf("request shouldn't have failed")
+	}
+}

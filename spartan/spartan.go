@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -55,18 +54,17 @@ func (c *Capsule) Handle(request string, w io.Writer) error {
 
 	path = "." + path
 
-	f, err := os.Open(path)
-	if err != nil {
-		return fmt.Errorf("file not found")
+	mime := natto.Mime(path)
+	switch mime {
+	case "application/cgi":
+		return natto.Cgi(w, path, "spartan")
+	default:
+		f, err := os.Open(path)
+		if err != nil {
+			return fmt.Errorf("file not found")
+		}
+		fmt.Fprintf(w, "%d %s\r\n", Success, mime)
+		io.Copy(w, f)
 	}
-
-	mime := natto.Types[filepath.Ext(path)]
-	if mime == "" {
-		mime = "application/octet-stream"
-	}
-
-	fmt.Fprintf(w, "%d %s\r\n", Success, mime)
-	io.Copy(w, f)
-
 	return nil
 }

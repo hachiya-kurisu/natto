@@ -1,7 +1,10 @@
 package natto
 
 import (
+	"fmt"
 	"io"
+	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -30,4 +33,17 @@ func Mime(path string) string {
 		mime = "application/octet-stream"
 	}
 	return mime
+}
+
+func Cgi(w io.Writer, path string, protocol string) error {
+	os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
+	os.Setenv("SERVER_PROTOCOL", protocol)
+	cmd := exec.Command(path)
+	cmd.Env = os.Environ()
+	cmd.Stdout = w
+	err := cmd.Run()
+	if err != nil {
+		return fmt.Errorf("cgi trouble")
+	}
+	return nil
 }

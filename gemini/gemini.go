@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/url"
 	"os"
-	"os/exec"
 	"strings"
 )
 
@@ -82,15 +81,7 @@ func (c *Capsule) request(path string, w io.Writer) error {
 	mime := natto.Mime(path)
 	switch mime {
 	case "application/cgi":
-		os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
-		os.Setenv("SERVER_PROTOCOL", "gemini")
-		cmd := exec.Command(path)
-		cmd.Env = os.Environ()
-		cmd.Stdout = w
-		err := cmd.Run()
-		if err != nil {
-			return fmt.Errorf("cgi trouble")
-		}
+		return natto.Cgi(w, path, "gemini")
 	default:
 		f, err := os.Open(path)
 		if err != nil {
