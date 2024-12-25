@@ -109,13 +109,6 @@ func TestSpartanMissingFile(t *testing.T) {
 	}
 }
 
-func TestSpartanContentLength(t *testing.T) {
-	err := s.Handle("localhost /notfound 5", io.Discard)
-	if err == nil {
-		t.Errorf("request should have failed: %s", err.Error())
-	}
-}
-
 func TestSpartanMalformedRequest(t *testing.T) {
 	err := s.Handle("localhost 0", io.Discard)
 	if err == nil {

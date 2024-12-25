@@ -20,43 +20,38 @@ type Capsule struct {
 	Path string
 }
 
-func (c *Capsule) validate(request string) (string, int, error) {
+func (c *Capsule) validate(request string) (string, string, error) {
 	request = strings.TrimSpace(request)
 	components := strings.SplitN(request, " ", 3)
 	if len(components) != 3 {
-		return "", 0, fmt.Errorf("malformed request")
+		return "", "", fmt.Errorf("malformed request")
 	}
-	path, contentLength := components[1], components[2]
+	path, length := components[1], components[2]
 	if path[0] != '/' {
-		return "", 0, fmt.Errorf("missing /")
+		return "", "", fmt.Errorf("missing /")
 	}
 	if path[len(path)-1] == '/' {
 		path = path + "index.gmi"
 	}
-	length, err := strconv.Atoi(contentLength)
+	_, err := strconv.Atoi(length)
 	if err != nil {
-		return "", 0, fmt.Errorf("invalid content length")
+		return "", "", fmt.Errorf("invalid content length")
 	}
 	return path, length, nil
 }
 
 func (c *Capsule) Handle(request string, w io.Writer) error {
-	path, l, err := c.validate(request)
+	path, length, err := c.validate(request)
 	if err != nil {
 		fmt.Fprintf(w, "%d %s\r\n", ClientError, err.Error())
 		return err
 	}
-	if l > 0 {
-		err := fmt.Errorf("no data block support yet")
-		fmt.Fprintf(w, "%d %s\r\n", ServerError, err)
-		return err
-	}
-
 	path = "." + path
 
 	mime := natto.Mime(path)
 	switch mime {
 	case "application/cgi":
+		os.Setenv("CONTENT_LENGTH", length)
 		return natto.Cgi(w, path, "spartan")
 	default:
 		f, err := os.Open(path)
