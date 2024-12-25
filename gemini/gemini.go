@@ -87,6 +87,7 @@ func (c *Capsule) request(path string, w io.Writer) error {
 		if err != nil {
 			return fmt.Errorf("file not found")
 		}
+		defer f.Close()
 		fmt.Fprintf(w, "%d %s\r\n", Success, mime)
 		io.Copy(w, f)
 	}
