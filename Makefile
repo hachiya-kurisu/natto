@@ -9,10 +9,10 @@ clean:
 	rm -f natto
 
 test:
-	go test -cover -coverpkg blekksprut.net/natto/gemini,blekksprut.net/natto/spartan
+	go test -cover -coverpkg ./gemini,./spartan
 
 cover:
-	go test -coverprofile=cover.out
+	go test -coverpkg ./gemini,./spartan -coverprofile=cover.out
 	go tool cover -html cover.out
 
 cert:

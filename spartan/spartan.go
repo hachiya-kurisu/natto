@@ -45,7 +45,8 @@ func (c *Capsule) Handle(request string, w io.Writer) error {
 		return err
 	}
 	if l > 0 {
-		fmt.Fprintf(w, "%d %s\r\n", ServerError, err.Error())
+		err := fmt.Errorf("no data block support yet")
+		fmt.Fprintf(w, "%d %s\r\n", ServerError, err)
 		return err
 	}
 
