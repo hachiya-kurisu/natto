@@ -31,6 +31,9 @@ func (c *Capsule) validate(request string) (string, int, error) {
 	if path[0] != '/' {
 		return "", 0, fmt.Errorf("missing /")
 	}
+	if path[len(path)-1] == '/' {
+		path = path + "index.gmi"
+	}
 	length, err := strconv.Atoi(contentLength)
 	if err != nil {
 		return "", 0, fmt.Errorf("invalid content length")

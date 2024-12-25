@@ -129,3 +129,10 @@ func TestSpartanDefaultMime(t *testing.T) {
 		t.Errorf("request shouldn't have failed: %s", err.Error())
 	}
 }
+
+func TestSpartanIndex(t *testing.T) {
+	err := s.Handle("localhost / 0", io.Discard)
+	if err == nil {
+		t.Errorf("request should have failed: %s", err.Error())
+	}
+}
