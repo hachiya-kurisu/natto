@@ -9,7 +9,7 @@ clean:
 	rm -f natto
 
 test:
-	go test -cover
+	go test -cover -coverpkg blekksprut.net/natto/gemini,blekksprut.net/natto/spartan
 
 cover:
 	go test -coverprofile=cover.out

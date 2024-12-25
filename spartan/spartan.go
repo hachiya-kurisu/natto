@@ -49,6 +49,8 @@ func (c *Capsule) Handle(request string, w io.Writer) error {
 		return err
 	}
 
+	path = "." + path
+
 	f, err := os.Open(path)
 	if err != nil {
 		return fmt.Errorf("file not found")
