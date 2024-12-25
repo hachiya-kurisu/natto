@@ -98,49 +98,49 @@ func TestUserInfo(t *testing.T) {
 func TestSpartan(t *testing.T) {
 	err := s.Handle("localhost /README.gmi 0", io.Discard)
 	if err != nil {
-		t.Errorf("request shouldn't have failed: %s", err.Error())
+		t.Errorf("request shouldn't have failed")
 	}
 }
 
 func TestSpartanMissingFile(t *testing.T) {
 	err := s.Handle("localhost /notfound 0", io.Discard)
 	if err == nil {
-		t.Errorf("request should have failed: %s", err.Error())
+		t.Errorf("request should have failed")
 	}
 }
 
 func TestSpartanMalformedRequest(t *testing.T) {
 	err := s.Handle("localhost 0", io.Discard)
 	if err == nil {
-		t.Errorf("request should have failed: %s", err.Error())
+		t.Errorf("request should have failed")
 	}
 }
 
 func TestSpartanMissingSlash(t *testing.T) {
 	err := s.Handle("localhost oops 0", io.Discard)
 	if err == nil {
-		t.Errorf("request should have failed: %s", err.Error())
+		t.Errorf("request should have failed")
 	}
 }
 
 func TestSpartanInvalidContentLength(t *testing.T) {
 	err := s.Handle("localhost /README.gmi zero", io.Discard)
 	if err == nil {
-		t.Errorf("request should have failed: %s", err.Error())
+		t.Errorf("request should have failed")
 	}
 }
 
 func TestSpartanDefaultMime(t *testing.T) {
 	err := s.Handle("localhost /natto.go 0", io.Discard)
 	if err != nil {
-		t.Errorf("request shouldn't have failed: %s", err.Error())
+		t.Errorf("request shouldn't have failed")
 	}
 }
 
 func TestSpartanIndex(t *testing.T) {
 	err := s.Handle("localhost / 0", io.Discard)
 	if err == nil {
-		t.Errorf("request should have failed: %s", err.Error())
+		t.Errorf("request should have failed")
 	}
 }
 
