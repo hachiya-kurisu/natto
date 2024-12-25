@@ -30,9 +30,9 @@ func main() {
 
 	var capsule natto.Capsule
 	if *s {
-		capsule = &gemini.Capsule{Path: *r}
-	} else {
 		capsule = &spartan.Capsule{Path: *r}
+	} else {
+		capsule = &gemini.Capsule{Path: *r}
 	}
 
 	reader := bufio.NewReader(os.Stdin)
