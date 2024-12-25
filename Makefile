@@ -2,7 +2,7 @@ all: natto
 
 again: clean all
 
-natto: natto.go cmd/natto/main.go
+natto: natto.go gemini/gemini.go spartan/spartan.go cmd/natto/main.go
 	go build -C cmd/natto -o ../../natto
 	
 clean:
