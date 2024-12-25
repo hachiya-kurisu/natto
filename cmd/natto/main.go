@@ -6,6 +6,7 @@ import (
 	"blekksprut.net/natto/spartan"
 	"bufio"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 )
@@ -13,7 +14,13 @@ import (
 func main() {
 	r := flag.String("r", "/var/gemini", "root directory")
 	s := flag.Bool("s", false, "spartan 💪")
+	v := flag.Bool("v", false, "version")
 	flag.Parse()
+
+	if *v {
+		fmt.Println(os.Args[0], natto.Version)
+		os.Exit(0)
+	}
 
 	err := os.Chdir(*r)
 	if err != nil {
