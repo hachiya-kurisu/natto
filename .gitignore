@@ -1,2 +1,6 @@
 /natto
+/karashi
 /cover.out
+/*.crt
+/*.key
+/*.csr

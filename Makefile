@@ -1,10 +1,13 @@
-all: natto
+all: natto karashi
 
 again: clean all
 
 natto: natto.go gemini/gemini.go spartan/spartan.go cmd/natto/main.go
 	go build -C cmd/natto -o ../../natto
 	
+karashi: natto.go gemini/gemini.go cmd/karashi/main.go
+	go build -C cmd/karashi -o ../../karashi
+
 clean:
 	rm -f natto
 
