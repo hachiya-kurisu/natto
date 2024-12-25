@@ -43,7 +43,7 @@ func Cgi(w io.Writer, path string, protocol string) error {
 	cmd.Stdout = w
 	err := cmd.Run()
 	if err != nil {
-		return fmt.Errorf("cgi trouble")
+		return fmt.Errorf("cgi trouble: %s", err.Error())
 	}
 	return nil
 }
