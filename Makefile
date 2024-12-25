@@ -9,7 +9,7 @@ karashi: natto.go gemini/gemini.go cmd/karashi/main.go
 	go build -C cmd/karashi -o ../../karashi
 
 clean:
-	rm -f natto
+	rm -f natto karashi
 
 test:
 	go test -cover -coverpkg ./gemini,./spartan

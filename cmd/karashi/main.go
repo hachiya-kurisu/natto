@@ -36,7 +36,6 @@ func main() {
 		os.Exit(0)
 	}
 
-	// Lockdown
 	cert, err := tls.LoadX509KeyPair(*c, *k)
 	if err != nil {
 		log.Fatal("keypair trouble")
@@ -49,8 +48,9 @@ func main() {
 	if err != nil {
 		log.Fatal("unable to chdir to root directory")
 	}
-	capsule := &gemini.Capsule{Path: *r}
+	Lockdown(*r)
 
+	capsule := &gemini.Capsule{Path: *r}
 	server, err := tls.Listen("tcp", *a, &config)
 	if err != nil {
 		log.Fatal(err)
