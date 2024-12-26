@@ -51,7 +51,7 @@ func main() {
 	}
 	Lockdown(*r)
 
-	capsule := &gemini.Capsule{Path: *r}
+	capsule := &gemini.Capsule{Root: *r}
 	server, err := tls.Listen("tcp", *a, &config)
 	if err != nil {
 		log.Fatal(err)

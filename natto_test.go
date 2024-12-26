@@ -39,6 +39,13 @@ func TestBrokenCgi(t *testing.T) {
 	}
 }
 
+func TestMissingCgi(t *testing.T) {
+	err := g.Handle("gemini://localhost/notfound.cgi", io.Discard)
+	if err == nil {
+		t.Errorf("request should have failed")
+	}
+}
+
 func TestDefaultMime(t *testing.T) {
 	err := g.Handle("gemini://localhost/natto.go", io.Discard)
 	if err != nil {
@@ -148,5 +155,12 @@ func TestSpartanCgi(t *testing.T) {
 	err := s.Handle("localhost /hello.cgi 0", io.Discard)
 	if err != nil {
 		t.Errorf("request shouldn't have failed")
+	}
+}
+
+func TestSpartanMissingCgi(t *testing.T) {
+	err := s.Handle("localhost /notfound.cgi 0", io.Discard)
+	if err == nil {
+		t.Errorf("request should have failed")
 	}
 }

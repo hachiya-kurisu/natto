@@ -4,13 +4,15 @@ import (
 	"blekksprut.net/natto"
 	"fmt"
 	"io"
+	"io/fs"
 	"net/url"
 	"os"
 	"strings"
 )
 
 type Capsule struct {
-	Path string
+	Root string
+	FS   fs.FS
 }
 
 const (
@@ -55,6 +57,13 @@ func (c *Capsule) validate(request string) (string, error) {
 }
 
 func (c *Capsule) Handle(request string, w io.Writer) error {
+	if c.FS == nil {
+		if c.Root == "" {
+			c.Root = "."
+		}
+		c.FS = os.DirFS(c.Root)
+	}
+
 	path, err := c.validate(request)
 	if err != nil {
 		fmt.Fprintf(w, "%d %s\r\n", BadRequest, err.Error())
@@ -76,14 +85,20 @@ func (c *Capsule) request(path string, w io.Writer) error {
 	if path[len(path)-1] == '/' {
 		path = path + "index.gmi"
 	}
-	path = "." + path
+	path = strings.TrimPrefix(path, "/")
 
 	mime := natto.Mime(path)
 	switch mime {
 	case "application/cgi":
-		return natto.Cgi(w, path, "gemini")
+		info, err := fs.Stat(c.FS, path)
+		if err != nil {
+			fmt.Fprintf(w, "%d %s\r\n", NotFound, err.Error())
+			return fmt.Errorf("file not found")
+		}
+		return natto.Cgi(w, c.Root+"/"+info.Name(), "gemini")
 	default:
-		f, err := os.Open(path)
+		path = strings.TrimPrefix(path, "/")
+		f, err := c.FS.Open(path)
 		if err != nil {
 			fmt.Fprintf(w, "%d %s\r\n", NotFound, err.Error())
 			return fmt.Errorf("file not found")
