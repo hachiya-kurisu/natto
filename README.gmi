@@ -42,3 +42,11 @@ gemini 1965/tcp
 spartan 300/tcp
 ```
 
+## karashi
+
+standalone gemini server. handles tls.
+
+## negi
+
+standalone spartan and gemini server. doesn't handle tls.
+

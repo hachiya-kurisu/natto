@@ -85,6 +85,7 @@ func (c *Capsule) request(path string, w io.Writer) error {
 	default:
 		f, err := os.Open(path)
 		if err != nil {
+			fmt.Fprintf(w, "%d %s\r\n", NotFound, err.Error())
 			return fmt.Errorf("file not found")
 		}
 		defer f.Close()

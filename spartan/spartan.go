@@ -43,7 +43,7 @@ func (c *Capsule) validate(request string) (string, string, error) {
 func (c *Capsule) Handle(request string, w io.Writer) error {
 	path, length, err := c.validate(request)
 	if err != nil {
-		fmt.Fprintf(w, "%d %s\r\n", ClientError, err.Error())
+		fmt.Fprintf(w, "%d %s\r\n", ClientError, "invalid request")
 		return err
 	}
 	path = "." + path
@@ -56,6 +56,7 @@ func (c *Capsule) Handle(request string, w io.Writer) error {
 	default:
 		f, err := os.Open(path)
 		if err != nil {
+			fmt.Fprintf(w, "%d %s\r\n", ClientError, "not found")
 			return fmt.Errorf("file not found")
 		}
 		defer f.Close()

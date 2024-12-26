@@ -1,4 +1,4 @@
-all: natto karashi
+all: natto karashi negi
 
 again: clean all
 
@@ -8,8 +8,11 @@ natto: natto.go gemini/gemini.go spartan/spartan.go cmd/natto/main.go
 karashi: natto.go gemini/gemini.go cmd/karashi/main.go
 	go build -C cmd/karashi -o ../../karashi
 
+negi: natto.go gemini/gemini.go cmd/negi/main.go
+	go build -C cmd/negi -o ../../negi
+
 clean:
-	rm -f natto karashi
+	rm -f natto karashi negi
 
 test:
 	go test -cover -coverpkg ./gemini,./spartan
