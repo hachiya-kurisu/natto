@@ -18,6 +18,7 @@ func serve(socket net.Conn, capsule natto.Capsule) {
 	request, err := reader.ReadString('\n')
 	if err != nil {
 		log.Println(err)
+		return
 	}
 	capsule.Handle(request, socket)
 }
