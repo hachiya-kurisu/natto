@@ -1,14 +1,13 @@
 package spartan
 
 import (
+	"blekksprut.net/natto"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"strconv"
 	"strings"
-
-	"blekksprut.net/natto"
 )
 
 const (

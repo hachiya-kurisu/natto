@@ -1,15 +1,14 @@
 package main
 
 import (
+	"blekksprut.net/natto"
+	"blekksprut.net/natto/gemini"
+	"blekksprut.net/natto/spartan"
 	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"os"
-
-	"blekksprut.net/natto"
-	"blekksprut.net/natto/gemini"
-	"blekksprut.net/natto/spartan"
 )
 
 func main() {
