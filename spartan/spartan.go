@@ -1,13 +1,14 @@
 package spartan
 
 import (
-	"blekksprut.net/natto"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"strconv"
 	"strings"
+
+	"blekksprut.net/natto"
 )
 
 const (
@@ -28,7 +29,7 @@ func (c *Capsule) validate(request string) (string, string, error) {
 	if len(components) != 3 {
 		return "", "", fmt.Errorf("malformed request")
 	}
-	path, length := components[1], components[2]
+	_, path, length := components[0], components[1], components[2]
 	if path[0] != '/' {
 		return "", "", fmt.Errorf("missing /")
 	}
@@ -57,21 +58,32 @@ func (c *Capsule) Handle(request string, w io.Writer) error {
 	}
 	path = strings.TrimPrefix(path, "/")
 
+	info, err := fs.Stat(c.FS, path)
+	if err != nil {
+		fmt.Fprintf(w, "%d %s\r\n", ClientError, "not found")
+		return err
+	}
+
+	if info.IsDir() {
+		u := fmt.Sprintf("/%s/", path)
+		fmt.Fprintf(w, "%d %s\r\n", Redirect, u)
+		return err
+	}
+
 	mime := natto.Mime(path)
 	switch mime {
 	case "application/cgi":
 		os.Setenv("CONTENT_LENGTH", length)
-		info, err := fs.Stat(c.FS, path)
-		if err != nil {
-			fmt.Fprintf(w, "%d %s\r\n", ClientError, err.Error())
-			return fmt.Errorf("file not found")
-		}
 		return natto.Cgi(w, c.Root+"/"+info.Name(), "spartan")
 	default:
 		f, err := c.FS.Open(path)
 		if err != nil {
-			fmt.Fprintf(w, "%d %s\r\n", ClientError, "not found")
-			return fmt.Errorf("file not found")
+			f, err = c.FS.Open(path + ".gmi")
+			if err != nil {
+				fmt.Fprintf(w, "%d %s\r\n", ServerError, "unreadable")
+				return fmt.Errorf("file not found")
+			}
+			mime = "text/gemini"
 		}
 		defer f.Close()
 		fmt.Fprintf(w, "%d %s\r\n", Success, mime)
