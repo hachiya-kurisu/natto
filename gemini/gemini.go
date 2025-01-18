@@ -4,7 +4,10 @@ import (
 	"blekksprut.net/natto"
 	"bufio"
 	"context"
+	"crypto/sha512"
 	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
 	"fmt"
 	"io"
 	"io/fs"
@@ -27,6 +30,7 @@ type Response struct {
 	Conn   *tls.Conn
 	Status string
 	Header string
+	Cert   *x509.Certificate
 }
 
 const (
@@ -128,12 +132,36 @@ func (r *Response) Close() {
 	r.Conn.Close()
 }
 
+func (r *Response) Signature() [64]byte {
+	return sha512.Sum512(r.Cert.Raw)
+}
+
+func (r *Response) SignatureBase64() string {
+	signature := r.Signature()
+	return base64.StdEncoding.EncodeToString(signature[:])
+}
+
 func (r *Response) Read(b []byte) (int, error) {
 	return r.Raw.Read(b)
 }
 
 func Request(ctx context.Context, rawURL string) (*Response, error) {
 	return doRequest(ctx, rawURL, 0)
+}
+
+func checkCertificate(cert *x509.Certificate) error {
+	now := time.Now()
+	if now.Before(cert.NotBefore) || now.After(cert.NotAfter) {
+		return fmt.Errorf("certificate is either expired or not yet valid")
+	}
+	return nil
+	// check NotBefore, check NotAfter
+	// check hostname (remember wildcards)
+	// calculate fingerprint
+	// check known hosts
+	// if not in known hosts, but ok - trust and add to known hosts
+	// if in known hosts, but no match, error
+	// if in known hosts and matching, we good
 }
 
 func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
@@ -156,6 +184,21 @@ func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	tls := conn.(*tls.Conn)
+	state := tls.ConnectionState()
+	cert := state.PeerCertificates[0]
+
+	err = cert.VerifyHostname(u.Hostname())
+	if err != nil {
+		return nil, err
+	}
+
+	err = checkCertificate(cert)
+	if err != nil {
+		return nil, err
+	}
+
 	fmt.Fprintf(conn, "%s\r\n", rawURL)
 	r := bufio.NewReader(conn)
 	header, err := r.ReadString('\n')
@@ -178,9 +221,7 @@ func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
 		}
 		return doRequest(ctx, loc.String(), n+1)
 	}
-	if u.Port() == "1965" {
-		u.Host = strings.TrimSuffix(u.Host, ":1965")
-	}
+	u.Host = strings.TrimSuffix(u.Host, ":1965")
 
-	return &Response{u, r, conn.(*tls.Conn), status, header}, nil
+	return &Response{u, r, tls, status, header, cert}, nil
 }
