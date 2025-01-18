@@ -2,12 +2,17 @@ package spartan
 
 import (
 	"blekksprut.net/natto"
+	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"io/fs"
+	"net"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -20,6 +25,58 @@ const (
 type Capsule struct {
 	Root string
 	FS   fs.FS
+}
+
+type Response struct {
+	Raw    io.Reader
+	Conn   net.Conn
+	Status string
+	Header string
+}
+
+func (r *Response) Close() {
+	r.Conn.Close()
+}
+
+func (r *Response) Read(b []byte) (int, error) {
+	return r.Raw.Read(b)
+}
+
+func Request(ctx context.Context, rawURL string) (*Response, error) {
+	u, err := url.Parse(rawURL)
+	if err != nil {
+		return nil, err
+	}
+	if u.Port() == "" {
+		u.Host = u.Host + ":300"
+	}
+	timeout, _ := time.ParseDuration("30s")
+	dialer := net.Dialer{Timeout: timeout}
+	conn, err := dialer.DialContext(ctx, "tcp", u.Host)
+	if err != nil {
+		return nil, err
+	}
+
+	if u.Path == "" {
+		u.Path = "/"
+	}
+
+	fmt.Fprintf(conn, "%s %s %d\r\n", u.Hostname(), u.Path, 0)
+
+	r := bufio.NewReader(conn)
+	header, err := r.ReadString('\n')
+	if err != nil {
+		return nil, err
+	}
+	status, header, _ := strings.Cut(header, " ")
+	if len(status) != 1 {
+		return nil, fmt.Errorf("malformed status code")
+	}
+	i, err := strconv.Atoi(status)
+	if err != nil || i < 2 || i > 5 {
+		return nil, fmt.Errorf("invalid status code", status)
+	}
+	return &Response{Raw: r, Conn: conn, Status: status, Header: header}, nil
 }
 
 func (c *Capsule) validate(request string) (string, string, error) {

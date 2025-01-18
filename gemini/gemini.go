@@ -3,6 +3,7 @@ package gemini
 import (
 	"blekksprut.net/natto"
 	"bufio"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"net"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -129,22 +131,24 @@ func (r *Response) Read(b []byte) (int, error) {
 	return r.Raw.Read(b)
 }
 
-func Request(rawURL string) (*Response, error) {
-	url, err := url.Parse(rawURL)
+func Request(ctx context.Context, rawURL string) (*Response, error) {
+	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
 	}
-	if url.Port() == "" {
-		url.Host = url.Host + ":1965"
+	if u.Port() == "" {
+		u.Host = u.Host + ":1965"
 	}
 	timeout, _ := time.ParseDuration("30s")
-	dialer := net.Dialer{Timeout: timeout}
-	conn, err := tls.DialWithDialer(&dialer, "tcp", url.Host, &tls.Config{
-		InsecureSkipVerify: true,
-	})
+	nd := net.Dialer{Timeout: timeout}
+	config := tls.Config{InsecureSkipVerify: true}
+	dialer := tls.Dialer{NetDialer: &nd, Config: &config}
+
+	conn, err := dialer.DialContext(ctx, "tcp", u.Host)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Fprintf(conn, "%s\r\n", rawURL)
 	r := bufio.NewReader(conn)
 	header, err := r.ReadString('\n')
 	if err != nil {
@@ -154,5 +158,9 @@ func Request(rawURL string) (*Response, error) {
 	if len(status) < 2 {
 		return nil, fmt.Errorf("malformed header")
 	}
-	return &Response{Raw: r, Conn: conn, Status: status, Header: header}, nil
+	i, err := strconv.Atoi(status)
+	if err != nil || i < 10 || i > 69 {
+		return nil, fmt.Errorf("invalid status code", status)
+	}
+	return &Response{r, conn.(*tls.Conn), status, header}, nil
 }
