@@ -22,6 +22,7 @@ type Capsule struct {
 }
 
 type Response struct {
+	URL    *url.URL
 	Raw    io.Reader
 	Conn   *tls.Conn
 	Status string
@@ -132,6 +133,13 @@ func (r *Response) Read(b []byte) (int, error) {
 }
 
 func Request(ctx context.Context, rawURL string) (*Response, error) {
+	return doRequest(ctx, rawURL, 0)
+}
+
+func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
+	if n > 5 {
+		return nil, fmt.Errorf("too many redirects")
+	}
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -162,5 +170,14 @@ func Request(ctx context.Context, rawURL string) (*Response, error) {
 	if err != nil || i < 10 || i > 69 {
 		return nil, fmt.Errorf("invalid status code", status)
 	}
-	return &Response{r, conn.(*tls.Conn), status, header}, nil
+
+	if i >= 30 && i <= 40 {
+		loc, err := u.Parse(strings.TrimSpace(header))
+		if err != nil {
+			return nil, fmt.Errorf("invalid redirect %s", err)
+		}
+		return doRequest(ctx, loc.String(), n+1)
+	}
+
+	return &Response{u, r, conn.(*tls.Conn), status, header}, nil
 }

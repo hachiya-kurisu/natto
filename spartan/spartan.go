@@ -28,6 +28,7 @@ type Capsule struct {
 }
 
 type Response struct {
+	URL    *url.URL
 	Raw    io.Reader
 	Conn   net.Conn
 	Status string
@@ -76,7 +77,7 @@ func Request(ctx context.Context, rawURL string) (*Response, error) {
 	if err != nil || i < 2 || i > 5 {
 		return nil, fmt.Errorf("invalid status code", status)
 	}
-	return &Response{Raw: r, Conn: conn, Status: status, Header: header}, nil
+	return &Response{u, r, conn, status, header}, nil
 }
 
 func (c *Capsule) validate(request string) (string, string, error) {
