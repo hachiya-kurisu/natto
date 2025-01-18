@@ -155,13 +155,6 @@ func checkCertificate(cert *x509.Certificate) error {
 		return fmt.Errorf("certificate is either expired or not yet valid")
 	}
 	return nil
-	// check NotBefore, check NotAfter
-	// check hostname (remember wildcards)
-	// calculate fingerprint
-	// check known hosts
-	// if not in known hosts, but ok - trust and add to known hosts
-	// if in known hosts, but no match, error
-	// if in known hosts and matching, we good
 }
 
 func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
