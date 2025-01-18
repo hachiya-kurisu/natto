@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-const Version = "0.1.7"
+const Version = "0.1.8"
 
 var Types = map[string]string{
 	".cgi":  "application/cgi",
