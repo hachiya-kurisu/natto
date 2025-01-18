@@ -44,6 +44,13 @@ func (r *Response) Read(b []byte) (int, error) {
 }
 
 func Request(ctx context.Context, rawURL string) (*Response, error) {
+	return doRequest(ctx, rawURL, 0)
+}
+
+func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
+	if n > 5 {
+		return nil, fmt.Errorf("too many redirects")
+	}
 	u, err := url.Parse(rawURL)
 	if err != nil {
 		return nil, err
@@ -76,6 +83,20 @@ func Request(ctx context.Context, rawURL string) (*Response, error) {
 	i, err := strconv.Atoi(status)
 	if err != nil || i < 2 || i > 5 {
 		return nil, fmt.Errorf("invalid status code", status)
+	}
+	if i == 3 {
+		loc, err := url.Parse(strings.TrimSpace(header))
+		if err != nil {
+			return nil, fmt.Errorf("invalid redirect %s", err)
+		}
+		if loc.Hostname() != "" {
+			return nil, fmt.Errorf("no cross-site redirects")
+		}
+		loc.Host = u.Hostname()
+		return doRequest(ctx, loc.String(), n + 1)
+	}
+	if u.Port() == "300" {
+		u.Host = strings.TrimSuffix(u.Host, ":300")
 	}
 	return &Response{u, r, conn, status, header}, nil
 }

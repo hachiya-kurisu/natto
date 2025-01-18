@@ -178,6 +178,9 @@ func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
 		}
 		return doRequest(ctx, loc.String(), n+1)
 	}
+	if u.Port() == "1965" {
+		u.Host = strings.TrimSuffix(u.Host, ":1965")
+	}
 
 	return &Response{u, r, conn.(*tls.Conn), status, header}, nil
 }
