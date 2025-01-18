@@ -22,7 +22,7 @@ const (
 	ServerError = 5
 )
 
-type Capsule struct {
+type Space struct {
 	Root string
 	FS   fs.FS
 }
@@ -35,6 +35,11 @@ type Response struct {
 	Header string
 }
 
+type Data struct {
+	Length int64
+	Data   io.Reader
+}
+
 func (r *Response) Close() {
 	r.Conn.Close()
 }
@@ -43,11 +48,11 @@ func (r *Response) Read(b []byte) (int, error) {
 	return r.Raw.Read(b)
 }
 
-func Request(ctx context.Context, rawURL string) (*Response, error) {
-	return doRequest(ctx, rawURL, 0)
+func Request(ctx context.Context, rawURL string, d Data) (*Response, error) {
+	return req(ctx, rawURL, d, 0)
 }
 
-func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
+func req(ctx context.Context, rawURL string, d Data, n int) (*Response, error) {
 	if n > 5 {
 		return nil, fmt.Errorf("too many redirects")
 	}
@@ -69,22 +74,25 @@ func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
 		u.Path = "/"
 	}
 
-	fmt.Fprintf(conn, "%s %s %d\r\n", u.Hostname(), u.Path, 0)
-
+	fmt.Fprintf(conn, "%s %s %d\r\n", u.Hostname(), u.Path, d.Length)
+	if d.Length > 0 {
+		written, err := io.Copy(conn, d.Data)
+		if err != nil {
+			return nil, err
+		}
+		if written != d.Length {
+			return nil, fmt.Errorf("invalid data length")
+		}
+	}
 	r := bufio.NewReader(conn)
 	header, err := r.ReadString('\n')
 	if err != nil {
 		return nil, err
 	}
 	status, header, _ := strings.Cut(header, " ")
-	if len(status) != 1 {
-		return nil, fmt.Errorf("malformed status code")
-	}
-	i, err := strconv.Atoi(status)
-	if err != nil || i < 2 || i > 5 {
-		return nil, fmt.Errorf("invalid status code", status)
-	}
-	if i == 3 {
+	i, _ := strconv.Atoi(status)
+	switch i {
+	case Redirect:
 		loc, err := url.Parse(strings.TrimSpace(header))
 		if err != nil {
 			return nil, fmt.Errorf("invalid redirect %s", err)
@@ -93,15 +101,16 @@ func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
 			return nil, fmt.Errorf("no cross-site redirects")
 		}
 		loc.Host = u.Hostname()
-		return doRequest(ctx, loc.String(), n + 1)
-	}
-	if u.Port() == "300" {
+		return req(ctx, loc.String(), Data{}, n+1)
+	case Success, ClientError, ServerError:
 		u.Host = strings.TrimSuffix(u.Host, ":300")
+		return &Response{u, r, conn, status, header}, nil
+	default:
+		return nil, fmt.Errorf("invalid status code")
 	}
-	return &Response{u, r, conn, status, header}, nil
 }
 
-func (c *Capsule) validate(request string) (string, string, error) {
+func (c *Space) validate(request string) (string, string, error) {
 	request = strings.TrimSpace(request)
 	components := strings.SplitN(request, " ", 3)
 	if len(components) != 3 {
@@ -121,7 +130,7 @@ func (c *Capsule) validate(request string) (string, string, error) {
 	return path, length, nil
 }
 
-func (c *Capsule) Handle(request string, w io.Writer) error {
+func (c *Space) Handle(request string, w io.Writer) error {
 	if c.FS == nil {
 		if c.Root == "" {
 			c.Root = "."

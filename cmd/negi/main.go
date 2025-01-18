@@ -52,7 +52,7 @@ func main() {
 
 	var capsule natto.Capsule
 	if *s {
-		capsule = &spartan.Capsule{Root: *r}
+		capsule = &spartan.Space{Root: *r}
 	} else {
 		capsule = &gemini.Capsule{Root: *r}
 	}

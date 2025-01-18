@@ -9,7 +9,7 @@ import (
 )
 
 var g gemini.Capsule
-var s spartan.Capsule
+var s spartan.Space
 
 func TestGemini(t *testing.T) {
 	err := g.Handle("gemini://localhost/README.gmi", io.Discard)
