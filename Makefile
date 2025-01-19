@@ -1,4 +1,4 @@
-all: natto karashi negi
+all: natto karashi negi okra
 
 again: clean all
 
@@ -10,6 +10,9 @@ karashi: natto.go gemini/gemini.go cmd/karashi/main.go
 
 negi: natto.go gemini/gemini.go cmd/negi/main.go
 	go build -C cmd/negi -o ../../negi
+
+okra: natto.go gemini/gemini.go cmd/okra/main.go
+	go build -C cmd/okra -o ../../okra
 
 clean:
 	rm -f natto karashi negi
