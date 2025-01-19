@@ -17,6 +17,11 @@ func main() {
 
 	flag.Parse()
 
+	if flag.NArg() == 0 {
+		flag.Usage()
+		os.Exit(0)
+	}
+
 	for _, u := range flag.Args() {
 		if !strings.HasPrefix(u, "gemini://") {
 			u = "gemini://" + u
@@ -24,7 +29,8 @@ func main() {
 
 		res, err := gemini.Request(ctx, u)
 		if err != nil {
-			panic(err)
+			fmt.Fprintln(os.Stderr, err)
+			continue
 		}
 		defer res.Close()
 
