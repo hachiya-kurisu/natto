@@ -31,15 +31,8 @@ relay "spartan" {
 
 and inetd.conf:
 ```
-[::1]:gemini stream tcp6 nowait gemini /usr/local/bin/natto natto
-[::1]:spartan stream tcp6 nowait gemini /usr/local/bin/natto natto -s
-```
-
-you might have to define the gemini service in /etc/services:
-
-```
-gemini 1965/tcp
-spartan 300/tcp
+[::1]:1965 stream tcp6 nowait gemini /usr/local/bin/natto natto
+[::1]:300 stream tcp6 nowait gemini /usr/local/bin/natto natto -s
 ```
 
 ## karashi
@@ -49,4 +42,8 @@ standalone gemini server. handles tls.
 ## negi
 
 standalone spartan and gemini server. doesn't handle tls.
+
+## okra
+
+very simple gemini client, mostly for testing purposes
 
