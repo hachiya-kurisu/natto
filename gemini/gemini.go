@@ -28,7 +28,7 @@ type Response struct {
 	URL    *url.URL
 	Raw    io.Reader
 	Conn   *tls.Conn
-	Status string
+	Status int
 	Header string
 	Cert   *x509.Certificate
 }
@@ -218,5 +218,5 @@ func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
 	}
 	u.Host = strings.TrimSuffix(u.Host, ":1965")
 
-	return &Response{u, r, tls, status, header, cert}, nil
+	return &Response{u, r, tls, i, header, cert}, nil
 }

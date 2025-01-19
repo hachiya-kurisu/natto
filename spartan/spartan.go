@@ -31,7 +31,7 @@ type Response struct {
 	URL    *url.URL
 	Raw    io.Reader
 	Conn   net.Conn
-	Status string
+	Status int
 	Header string
 }
 
@@ -104,7 +104,7 @@ func req(ctx context.Context, rawURL string, d Data, n int) (*Response, error) {
 		return req(ctx, loc.String(), Data{}, n+1)
 	case Success, ClientError, ServerError:
 		u.Host = strings.TrimSuffix(u.Host, ":300")
-		return &Response{u, r, conn, status, header}, nil
+		return &Response{u, r, conn, i, header}, nil
 	default:
 		return nil, fmt.Errorf("invalid status code")
 	}
