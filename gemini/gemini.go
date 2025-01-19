@@ -207,8 +207,10 @@ func doRequest(ctx context.Context, rawURL string, n int) (*Response, error) {
 		return nil, fmt.Errorf("invalid status code", status)
 	}
 
+	header = strings.TrimSpace(header)
+
 	if i >= 30 && i <= 40 {
-		loc, err := u.Parse(strings.TrimSpace(header))
+		loc, err := u.Parse(header)
 		if err != nil {
 			return nil, fmt.Errorf("invalid redirect %s", err)
 		}
