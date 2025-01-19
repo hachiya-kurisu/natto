@@ -34,25 +34,25 @@ func main() {
 		}
 		defer res.Close()
 
-		switch res.Status[0] {
-		case '1':
-			fmt.Fprintf(os.Stderr, "Input requests not supported\n")
-		case '6':
-			fmt.Fprintf(os.Stderr, "Client certificate support not yet implemented\n")
-		case '4', '5':
-			fmt.Fprintf(os.Stderr, "%s %s\n", res.Status, res.Header)
-		case '2':
+		switch res.Status / 10 {
+		case 1:
+			fmt.Fprintln(os.Stderr, "Input requests not supported")
+		case 6:
+			fmt.Fprintln(os.Stderr, "Client certificate support not yet implemented")
+		case 4, 5:
+			fmt.Fprintln(os.Stderr, res.Status, res.Header)
+		case 2:
 			if *s {
-				fmt.Fprintf(os.Stderr, "%s %s\n", res.Status, res.Header)
+				fmt.Fprintln(os.Stderr, res.Status, res.Header)
 			}
 			switch {
 			case strings.HasPrefix(res.Header, "text/"):
 				io.Copy(os.Stdout, res)
 			default:
-				fmt.Fprintln(os.Stderr, "only text responses supported")
+				fmt.Fprintln(os.Stderr, "only text responses supported for now")
 			}
 		default:
-			fmt.Fprintf(os.Stderr, "Unknown status code %s\n", res.Status)
+			fmt.Fprintln(os.Stderr, "Unknown status code", res.Status)
 		}
 	}
 }
