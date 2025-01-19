@@ -18,7 +18,7 @@ mentaiko: natto.go gemini/gemini.go cmd/mentaiko/main.go
 	go build -C cmd/mentaiko -o ../../mentaiko
 
 clean:
-	rm -f natto karashi negi
+	rm -f natto karashi negi okra mentaiko
 
 test:
 	go test -cover -coverpkg ./gemini,./spartan
