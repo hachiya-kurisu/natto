@@ -14,7 +14,7 @@ negi: natto.go gemini/gemini.go cmd/negi/main.go
 okra: natto.go gemini/gemini.go cmd/okra/main.go
 	go build -C cmd/okra -o ../../okra
 
-mentaiko: natto.go gemini/gemini.go cmd/mentaiko/main.go
+mentaiko: natto.go spartan/spartan.go cmd/mentaiko/main.go
 	go build -C cmd/mentaiko -o ../../mentaiko
 
 clean:
