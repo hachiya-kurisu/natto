@@ -45,5 +45,8 @@ standalone spartan and gemini server. doesn't handle tls.
 
 ## okra
 
-very simple gemini client, mostly for testing purposes
+gemini client (for testing purposes)
 
+## mentaiko
+
+spartan client (for testing purposes)

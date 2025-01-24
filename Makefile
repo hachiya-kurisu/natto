@@ -1,3 +1,5 @@
+TEST = ./gemini,./spartan,.
+
 all: natto karashi negi okra mentaiko
 
 again: clean all
@@ -21,10 +23,10 @@ clean:
 	rm -f natto karashi negi okra mentaiko
 
 test:
-	go test -cover -coverpkg ./gemini,./spartan
+	go test -cover -coverpkg $(TEST)
 
 cover:
-	go test -coverpkg ./gemini,./spartan -coverprofile=cover.out
+	go test -coverpkg $(TEST) -coverprofile=cover.out
 	go tool cover -html cover.out
 
 cert:
