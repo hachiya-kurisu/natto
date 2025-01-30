@@ -24,7 +24,17 @@ var Types = map[string]string{
 }
 
 type Capsule interface {
-	Handle(string, io.Writer) error
+	Handle(string, io.ReadWriter) error
+}
+
+type Stdio struct{}
+
+func (s *Stdio) Read(p []byte) (n int, err error) {
+	return os.Stdin.Read(p)
+}
+
+func (s *Stdio) Write(p []byte) (n int, err error) {
+	return os.Stdout.Write(p)
 }
 
 func Mime(path string) string {
@@ -35,12 +45,13 @@ func Mime(path string) string {
 	return mime
 }
 
-func Cgi(w io.Writer, path string, protocol string) error {
+func Cgi(rw io.ReadWriter, path string, protocol string) error {
 	os.Setenv("GATEWAY_INTERFACE", "CGI/1.1")
 	os.Setenv("SERVER_PROTOCOL", protocol)
 	cmd := exec.Command(path)
 	cmd.Env = os.Environ()
-	cmd.Stdout = w
+	cmd.Stdin = rw
+	cmd.Stdout = rw
 	err := cmd.Run()
 	if err != nil {
 		return fmt.Errorf("cgi trouble: %s", err.Error())

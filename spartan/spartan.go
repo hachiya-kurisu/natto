@@ -130,7 +130,7 @@ func (c *Space) validate(request string) (string, string, error) {
 	return path, length, nil
 }
 
-func (c *Space) Handle(request string, w io.Writer) error {
+func (c *Space) Handle(request string, rw io.ReadWriter) error {
 	if c.FS == nil {
 		if c.Root == "" {
 			c.Root = "."
@@ -140,20 +140,20 @@ func (c *Space) Handle(request string, w io.Writer) error {
 
 	path, length, err := c.validate(request)
 	if err != nil {
-		fmt.Fprintf(w, "%d %s\r\n", ClientError, "invalid request")
+		fmt.Fprintf(rw, "%d %s\r\n", ClientError, "invalid request")
 		return err
 	}
 	path = strings.TrimPrefix(path, "/")
 
 	info, err := fs.Stat(c.FS, path)
 	if err != nil {
-		fmt.Fprintf(w, "%d %s\r\n", ClientError, "not found")
+		fmt.Fprintf(rw, "%d %s\r\n", ClientError, "not found")
 		return err
 	}
 
 	if info.IsDir() {
 		u := fmt.Sprintf("/%s/", path)
-		fmt.Fprintf(w, "%d %s\r\n", Redirect, u)
+		fmt.Fprintf(rw, "%d %s\r\n", Redirect, u)
 		return err
 	}
 
@@ -161,20 +161,20 @@ func (c *Space) Handle(request string, w io.Writer) error {
 	switch mime {
 	case "application/cgi":
 		os.Setenv("CONTENT_LENGTH", length)
-		return natto.Cgi(w, c.Root+"/"+info.Name(), "spartan")
+		return natto.Cgi(rw, c.Root+"/"+info.Name(), "spartan")
 	default:
 		f, err := c.FS.Open(path)
 		if err != nil {
 			f, err = c.FS.Open(path + ".gmi")
 			if err != nil {
-				fmt.Fprintf(w, "%d %s\r\n", ServerError, "unreadable")
+				fmt.Fprintf(rw, "%d %s\r\n", ServerError, "unreadable")
 				return fmt.Errorf("file not found")
 			}
 			mime = "text/gemini"
 		}
 		defer f.Close()
-		fmt.Fprintf(w, "%d %s\r\n", Success, mime)
-		io.Copy(w, f)
+		fmt.Fprintf(rw, "%d %s\r\n", Success, mime)
+		io.Copy(rw, f)
 	}
 	return nil
 }

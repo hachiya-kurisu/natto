@@ -74,7 +74,7 @@ func (c *Capsule) validate(request string) (string, error) {
 	return u.Path, nil
 }
 
-func (c *Capsule) Handle(request string, w io.Writer) error {
+func (c *Capsule) Handle(request string, rw io.ReadWriter) error {
 	if c.FS == nil {
 		if c.Root == "" {
 			c.Root = "."
@@ -84,19 +84,19 @@ func (c *Capsule) Handle(request string, w io.Writer) error {
 
 	path, err := c.validate(request)
 	if err != nil {
-		fmt.Fprintf(w, "%d %s\r\n", BadRequest, err.Error())
+		fmt.Fprintf(rw, "%d %s\r\n", BadRequest, err.Error())
 		return err
 	}
-	err = c.request(path, w)
+	err = c.request(path, rw)
 	if err != nil {
-		fmt.Fprintf(w, "%d %s\r\n", NotFound, err.Error())
+		fmt.Fprintf(rw, "%d %s\r\n", NotFound, err.Error())
 		return err
 	}
 
 	return nil
 }
 
-func (c *Capsule) request(path string, w io.Writer) error {
+func (c *Capsule) request(path string, rw io.ReadWriter) error {
 	if path == "" {
 		path = "/"
 	}
@@ -110,20 +110,20 @@ func (c *Capsule) request(path string, w io.Writer) error {
 	case "application/cgi":
 		info, err := fs.Stat(c.FS, path)
 		if err != nil {
-			fmt.Fprintf(w, "%d %s\r\n", NotFound, err.Error())
+			fmt.Fprintf(rw, "%d %s\r\n", NotFound, err.Error())
 			return fmt.Errorf("file not found")
 		}
-		return natto.Cgi(w, c.Root+"/"+info.Name(), "gemini")
+		return natto.Cgi(rw, c.Root+"/"+info.Name(), "gemini")
 	default:
 		path = strings.TrimPrefix(path, "/")
 		f, err := c.FS.Open(path)
 		if err != nil {
-			fmt.Fprintf(w, "%d %s\r\n", NotFound, err.Error())
+			fmt.Fprintf(rw, "%d %s\r\n", NotFound, err.Error())
 			return fmt.Errorf("file not found")
 		}
 		defer f.Close()
-		fmt.Fprintf(w, "%d %s\r\n", Success, mime)
-		io.Copy(w, f)
+		fmt.Fprintf(rw, "%d %s\r\n", Success, mime)
+		io.Copy(rw, f)
 	}
 	return nil
 }

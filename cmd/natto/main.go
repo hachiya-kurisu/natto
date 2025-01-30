@@ -40,5 +40,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	capsule.Handle(request, os.Stdout)
+	capsule.Handle(request, &natto.Stdio{})
 }
