@@ -5,11 +5,11 @@ import (
 	"blekksprut.net/natto/gemini"
 	"blekksprut.net/natto/spartan"
 	"bufio"
-	"path/filepath"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 func main() {
