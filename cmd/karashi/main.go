@@ -5,6 +5,7 @@ import (
 	"blekksprut.net/natto/gemini"
 	"bufio"
 	"crypto/tls"
+	"path/filepath"
 	"flag"
 	"fmt"
 	"log"
@@ -45,13 +46,18 @@ func main() {
 		Certificates: []tls.Certificate{cert},
 	}
 
-	err = os.Chdir(*r)
+	path, err := filepath.Abs(*r)
+	if err != nil {
+		log.Fatal("invalid root path")
+	}
+
+	err = os.Chdir(path)
 	if err != nil {
 		log.Fatal("unable to chdir to root directory")
 	}
-	Lockdown(*r)
+	Lockdown(path)
 
-	capsule := &gemini.Capsule{Root: *r}
+	capsule := &gemini.Capsule{Root: path}
 	server, err := tls.Listen("tcp", *a, &config)
 	if err != nil {
 		log.Fatal(err)
