@@ -5,12 +5,12 @@ import (
 	"blekksprut.net/natto/gemini"
 	"bufio"
 	"crypto/tls"
-	"path/filepath"
 	"flag"
 	"fmt"
 	"log"
 	"net"
 	"os"
+	"path/filepath"
 )
 
 func serve(socket net.Conn, capsule *gemini.Capsule) {
