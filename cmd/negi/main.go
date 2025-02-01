@@ -47,7 +47,7 @@ func main() {
 
 	path, err := filepath.Abs(*r)
 	if err != nil {
-		log.Fatal("invalid root path: %s", *r)
+		log.Fatal("invalid root path")
 	}
 
 	err = os.Chdir(path)

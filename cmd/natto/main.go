@@ -5,6 +5,7 @@ import (
 	"blekksprut.net/natto/gemini"
 	"blekksprut.net/natto/spartan"
 	"bufio"
+	"path/filepath"
 	"flag"
 	"fmt"
 	"log"
@@ -22,17 +23,22 @@ func main() {
 		os.Exit(0)
 	}
 
-	err := os.Chdir(*r)
+	path, err := filepath.Abs(*r)
+	if err != nil {
+		log.Fatal("invalid root path")
+	}
+
+	err = os.Chdir(path)
 	if err != nil {
 		log.Fatal("unable to chdir to root directory")
 	}
-	Lockdown(*r)
+	Lockdown(path)
 
 	var capsule natto.Capsule
 	if *s {
-		capsule = &spartan.Space{Root: *r}
+		capsule = &spartan.Space{Root: path}
 	} else {
-		capsule = &gemini.Capsule{Root: *r}
+		capsule = &gemini.Capsule{Root: path}
 	}
 
 	reader := bufio.NewReader(os.Stdin)
