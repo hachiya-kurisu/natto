@@ -38,7 +38,11 @@ cert:
 		-out /etc/ssl/gemini.crt
 
 install:
-	install natto /usr/local/bin
+	install natto /usr/local/bin/
+	install karashi /usr/local/bin/
+	install negi /usr/local/bin/
+	install okra /usr/local/bin/
+	install mentaiko /usr/local/bin/
 
 push:
 	got send
