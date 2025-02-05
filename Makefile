@@ -37,7 +37,7 @@ cert:
 		-in /etc/ssl/gemini.csr -signkey /etc/ssl/private/gemini.key \
 		-out /etc/ssl/gemini.crt
 
-install:
+install: all
 	install natto /usr/local/bin/
 	install karashi /usr/local/bin/
 	install negi /usr/local/bin/
