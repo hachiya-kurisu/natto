@@ -1,11 +1,13 @@
 # natto
 
-austere gemini/spartan tools for openbsd (might work on other platforms...?)
+austere gemini/spartan tools
 
 * inetd-based
-* tls handled by relayd
+* tls handled by relayd (or something like it)
 * does unveil/pledge on openbsd
 * spartan support 💪
+
+made for openbsd, might work elsewhere
 
 ## setup
 
