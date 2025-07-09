@@ -37,18 +37,26 @@ and inetd.conf:
 [::1]:300 stream tcp6 nowait gemini /usr/local/bin/natto natto -s
 ```
 
-## karashi
+## tools
+
+such variety...
+
+### karashi
 
 standalone gemini server. handles tls.
 
-## negi
+### negi
 
 standalone spartan and gemini server. doesn't handle tls.
 
-## okra
+### okra
 
 gemini client (for testing purposes)
 
-## mentaiko
+### mentaiko
 
 spartan client (for testing purposes)
+
+## author
+
+=> https://blekksprut.net/ 蜂谷栗栖
