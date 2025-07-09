@@ -1,5 +1,5 @@
 module blekksprut.net/natto
 
-go 1.24.4
+go 1.24.5
 
 require golang.org/x/sys v0.33.0
