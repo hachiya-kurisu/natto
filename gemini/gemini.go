@@ -1,7 +1,6 @@
 package gemini
 
 import (
-	"blekksprut.net/natto"
 	"bufio"
 	"context"
 	"crypto/sha512"
@@ -17,6 +16,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"blekksprut.net/natto"
 )
 
 type Capsule struct {
@@ -151,8 +152,11 @@ func Request(ctx context.Context, rawURL string) (*Response, error) {
 
 func checkCertificate(cert *x509.Certificate) error {
 	now := time.Now()
-	if now.Before(cert.NotBefore) || now.After(cert.NotAfter) {
-		return fmt.Errorf("certificate is either expired or not yet valid")
+	if now.Before(cert.NotBefore) {
+		return fmt.Errorf("certificate is only valid from %s", cert.NotBefore)
+	}
+	if now.After(cert.NotAfter) {
+		return fmt.Errorf("certificate expired %s", cert.NotAfter)
 	}
 	return nil
 }
