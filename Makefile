@@ -3,6 +3,8 @@ TEST = ./gemini,./spartan,.
 NATTO_GEMINI_TEST_URL ?= gemini://higeki.jp
 NATTO_SPARTAN_TEST_URL ?= spartan://higeki.jp
 
+PREFIX ?= /usr/local
+
 all: natto karashi negi okra mentaiko
 
 again: clean all
@@ -45,11 +47,12 @@ cert:
 		-out /etc/ssl/gemini.crt
 
 install: all
-	install natto /usr/local/bin/
-	install karashi /usr/local/bin/
-	install negi /usr/local/bin/
-	install okra /usr/local/bin/
-	install mentaiko /usr/local/bin/
+	install -d ${DESTDIR}${PREFIX}/bin
+	install -m 755 natto ${DESTDIR}${PREFIX}/bin/natto
+	install -m 755 karashi ${DESTDIR}${PREFIX}/bin/karashi
+	install -m 755 negi ${DESTDIR}${PREFIX}/bin/negi
+	install -m 755 okra ${DESTDIR}${PREFIX}/bin/okra
+	install -m 755 mentaiko ${DESTDIR}${PREFIX}/bin/mentaiko
 
 push:
 	got send
