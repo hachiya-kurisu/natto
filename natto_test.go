@@ -190,6 +190,9 @@ func TestGeminiRequest(t *testing.T) {
 			t.Errorf("failed to get spartan test url")
 		} else {
 			defer r.Close()
+			if r.SignatureBase64() == "" {
+				t.Errorf("missing signature")
+			}
 			ioutil.ReadAll(r)
 		}
 	}
