@@ -1,5 +1,8 @@
 TEST = ./gemini,./spartan,.
 
+NATTO_GEMINI_TEST_URL ?= gemini://higeki.jp
+NATTO_SPARTAN_TEST_URL ?= spartan://higeki.jp
+
 all: natto karashi negi okra mentaiko
 
 again: clean all
@@ -23,9 +26,13 @@ clean:
 	rm -f natto karashi negi okra mentaiko
 
 test:
+	NATTO_GEMINI_TEST_URL=$(NATTO_GEMINI_TEST_URL) \
+	NATTO_SPARTAN_TEST_URL=$(NATTO_SPARTAN_TEST_URL) \
 	go test -cover -coverpkg $(TEST)
 
 cover:
+	NATTO_GEMINI_TEST_URL=$(NATTO_GEMINI_TEST_URL) \
+	NATTO_SPARTAN_TEST_URL=$(NATTO_SPARTAN_TEST_URL) \
 	go test -coverpkg $(TEST) -coverprofile=cover.out
 	go tool cover -html cover.out
 
@@ -55,6 +62,9 @@ README.md: README.gmi
 	sisyphus -f markdown <README.gmi >README.md
 
 doc: README.md
+
+dead:
+	deadcode ./...
 
 release: push
 	git push github --tags

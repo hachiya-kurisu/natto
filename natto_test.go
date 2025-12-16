@@ -2,6 +2,9 @@ package natto_test
 
 import (
 	"bytes"
+	"context"
+	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 
@@ -163,5 +166,31 @@ func TestSpartanMissingCgi(t *testing.T) {
 	err := s.Handle("localhost /notfound.cgi 0", &bytes.Buffer{})
 	if err == nil {
 		t.Errorf("request should have failed")
+	}
+}
+
+func TestSpartanRequest(t *testing.T) {
+	u := os.Getenv("NATTO_SPARTAN_TEST_URL")
+	if u != "" {
+		r, err := spartan.Request(context.Background(), u, spartan.Data{})
+		if err != nil {
+			t.Errorf("failed to get spartan test url")
+		} else {
+			defer r.Close()
+			ioutil.ReadAll(r)
+		}
+	}
+}
+
+func TestGeminiRequest(t *testing.T) {
+	u := os.Getenv("NATTO_GEMINI_TEST_URL")
+	if u != "" {
+		r, err := gemini.Request(context.Background(), u)
+		if err != nil {
+			t.Errorf("failed to get spartan test url")
+		} else {
+			defer r.Close()
+			ioutil.ReadAll(r)
+		}
 	}
 }
